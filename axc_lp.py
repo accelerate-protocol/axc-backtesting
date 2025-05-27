@@ -78,7 +78,9 @@ def do_calc(tenv):
     results = []
     for lower in [0.95, 0.9, 0.8, 0.7, 0.5, 0.1, 0.000001]:
         for swap in np.geomspace(100, tenv.usdt_in, num=100):
-            (lp, tkn0, tkn1) = setup_lp(tenv, [[
+            (lp, tkn0, tkn1) = setup_lp(tenv, [
+                [tenv.user_lp, "min_tick", "max_tick"],
+                [
                 tenv.reserve, lower, 1.0
             ]])
             try:
@@ -101,7 +103,7 @@ def do_calc1(tenv):
         for swap in np.geomspace(100, tenv.usdt_in, num=100):
             (lp, tkn0, tkn1) = setup_lp(
                 tenv, [
-                    [tenv.reserve * (1.0 - frac_reserve), "min_tick", 1.0],
+                    [tenv.reserve * (1.0 - frac_reserve), "min_tick", "max_tick"],
                     [tenv.reserve * frac_reserve, insurance_lower, 1.0]
                 ]
             )
