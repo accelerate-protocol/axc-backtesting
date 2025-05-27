@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from dataclasses import dataclass
 import traceback
 from axc_algobot import *
+from tqdm.autonotebook import tqdm, trange
 
 import matplotlib.pyplot as plt
 import pymc
@@ -33,9 +34,9 @@ class TokenScenario:
     reserve_lower: float
     seed: int
 
-def plotme(df, title, annotation):
+def plotme(df, title, annotation="", group='lower'):
     plt.figure(figsize=(10,6))
-    for key, grp in df.groupby('lower'):
+    for key, grp in df.groupby(group):
         plt.plot(grp['swap'], grp['price'], label=key)
 
     plt.text(25000, 0.6, annotation )
@@ -116,6 +117,27 @@ def do_calc1(tenv):
                 pass
     return pd.DataFrame(results)
 
+def do_calc2(tenv, params, names):
+    results = []
+    insurance_lower = 0.95
+    insurance_upper = 0.98
+    for param, name in zip(params, names):
+        for swap in np.geomspace(100, tenv.usdt_in, num=100):
+            (lp, tkn0, tkn1) = setup_lp(
+                tenv, param
+            )
+            try:
+                out = Swap().apply(lp, tkn0, tenv.user, swap)
+                results.append({
+                    "lower": name,
+                    "swap": swap,
+                    "out": out,
+                    "price": float(out) / float(swap)
+                })
+            except AssertionError:
+                pass
+    return pd.DataFrame(results)
+
 def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     # Set up bot
     bot = bot_class.factory()
@@ -149,11 +171,9 @@ def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
     lp_price_samples = np.zeros((npaths, nsteps), dtype=np.float64)
     lp_liquidity_samples = np.zeros((npaths, nsteps), dtype=np.float64)
     adapter_logs = []
-    for i in range(npaths):
+    for i in trange(npaths):
         (lp, tkn0, tkn1) = setup_lp(tenv, lp_params)
         (lp_prices, lp_liquidity, adapter_log) = do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class)
-        if i % 10 == 0:
-            print(i)
         lp_price_samples[i] = lp_prices
         lp_liquidity_samples[i] = lp_liquidity
         adapter_logs.append(adapter_log)
@@ -188,19 +208,14 @@ def plot_distribution(samples, title='Price (TKN)', ylim=[0.75, 1.5] ):
         plot_samples=False
     )
     P_ax.plot(xaxis, np.mean(samples, axis=0), color = 'w', linewidth=3, label='Price')
-    P_ax.set_title(title, fontsize=20)
-    P_ax.legend(fontsize=16, facecolor="lightgray", loc='upper left')
-    P_ax.set_xlabel("Trades", fontsize=16)
-    P_ax.set_ylabel("Price (TKN/USDT)", fontsize=16)
+    P_ax.set_title(title)
+    P_ax.legend(facecolor="lightgray", loc='upper left')
+    P_ax.set_xlabel("Trades")
+    P_ax.set_ylabel("Price (TKN/USDT)")
     P_ax.set_ylim(ylim)
 
-def dump_liquidity():
+def dump_liquidity(lp, tkn0, tkn1):
     liquidity = {}
-    lower = 0.9
-    (lp, tkn0, tkn1) = setup_lp(tenv, [[
-        tenv.reserve, lower, 1.0
-    ]])
-
     df_liq = pd.DataFrame(columns=['tick', 'price', 'liquidity'])
     for k, pos in enumerate(lp.ticks):
         price = UniV3Helper().tick_to_price(pos)
@@ -243,6 +258,7 @@ def plot_liquidity(df_liq):
 
     plt.tight_layout()
 
-__all__ = ['plotme', 'do_calc', 'do_calc1', 'setup_lp', 'TokenScenario',
+__all__ = ['plotme', 'do_calc', 'do_calc1', 'do_calc2',
+           'setup_lp', 'TokenScenario',
           'do_sim', 'do_paths', 'dump_liquidity', 'plot_liquidity',
           'plot_path', 'plot_distribution']

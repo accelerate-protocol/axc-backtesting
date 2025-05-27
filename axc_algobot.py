@@ -108,12 +108,12 @@ class AlgoBotAdapter:
                         pass
                 if k == "redeem":
                     self.redeem_queue[self.nsteps] = v
-                    self.bot.change_reserves(0, v)
+                    self.bot.change_reserves(0, -v)
             new_redeem_queue = {}
             for k, v in self.redeem_queue.items():
                 if self.nsteps >= k + self.delay:
                     self.bot.change_reserves(v * self.nav, 0)
-                    ic(self.nsteps, "redeem out")
+                    self.log['redemption'][self.nsteps] = v
                 else:
                     new_redeem_queue[k] = v
             self.redeem_queue = new_redeem_queue
