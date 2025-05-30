@@ -33,7 +33,30 @@ class TokenScenario:
     nav: float
     reserve_lower: float
     seed: int
+    tkn_prob: float
+    swap_size: int
 
+fee = UniV3Utils.FeeAmount.MEDIUM
+tick_spacing = UniV3Utils.TICK_SPACINGS[fee]
+init_price = UniV3Utils.encodePriceSqrt(1000,1000)
+token_scenario_baseline = TokenScenario(
+    user = 'user',
+    user_lp = 10000,
+    reserve = 50000,
+    name0 = "TKN",
+    name1 = "USDT",
+    address0 = "0x111",
+    address1 = "0x09",
+    usdt_in = 10**6,
+    tick_spacing = tick_spacing,
+    fee = fee,
+    init_price = init_price,
+    nav=1.0,
+    reserve_lower = 0.9,
+    seed  = 42,
+    tkn_prob = 0.5,
+    swap_size = 1000
+)
 def plotme(df, legend, annotation="", group='lower', title=""):
     plt.figure(figsize=(10,6))
     for key, grp in df.groupby(group):
@@ -153,9 +176,9 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     # Run simulation
     for i in range(nsteps):
         accounts = MockAddress().apply(50)
-        select_tkn = EventSelectionModel().bi_select(0.5)
-        rnd_add_amt = TokenDeltaModel(1000).delta()
-        rnd_swap_amt = TokenDeltaModel(1000).delta()
+        select_tkn = EventSelectionModel().bi_select(tenv.tkn_prob)
+        rnd_add_amt = TokenDeltaModel(tenv.swap_size).delta()
+        rnd_swap_amt = TokenDeltaModel(tenv.swap_size).delta()
         user_add = random.choice(accounts)
         user_swap = random.choice(accounts)
         try:
@@ -264,4 +287,4 @@ def plot_liquidity(df_liq):
 __all__ = ['plotme', 'do_calc', 'do_calc1', 'do_calc2',
            'setup_lp', 'TokenScenario',
           'do_sim', 'do_paths', 'dump_liquidity', 'plot_liquidity',
-          'plot_path', 'plot_distribution']
+          'plot_path', 'plot_distribution', 'token_scenario_baseline']
