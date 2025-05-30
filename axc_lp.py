@@ -34,13 +34,14 @@ class TokenScenario:
     reserve_lower: float
     seed: int
 
-def plotme(df, title, annotation="", group='lower'):
+def plotme(df, legend, annotation="", group='lower', title=""):
     plt.figure(figsize=(10,6))
     for key, grp in df.groupby(group):
         plt.plot(grp['swap'], grp['price'], label=key)
 
     plt.text(25000, 0.6, annotation )
-    plt.legend(title=title)
+    plt.legend(title=legend)
+    plt.title(title)
     plt.xlabel('Tokens sold (TKN)')
     plt.ylabel('Swap price (USDT/TKN)')
     plt.show()
