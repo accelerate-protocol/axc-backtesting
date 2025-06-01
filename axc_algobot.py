@@ -44,23 +44,26 @@ class AlgoBot(AbstractAlgoBot):
         self.reserve_wait = False
         self.wait = 0
 
-    def run_algo(self, lp, input):
+    def run_algo(self, lp, input_data):
         cmds = []
-        if input["nsteps"] < self.wait:
+        if input_data["nsteps"] < self.wait:
             return {}
-        if input["price"] is not None and input["price"] < input["nav"] - 0.05:
-            (x, y) = SolveDeltas(lp).calc(0.98)
-            cmds.append({"swap1to0": y})
-        if input["price"] is not None and input["price"] > input["nav"] + 0.05:
-            (x, y) = SolveDeltas(lp).calc(1.02)
-            cmds.append({"swap0to1": x})
-        if (
-            input["price"] is not None
-            and input["price"] >= 0.95
-            and self.reserve_tkn1 <= 5000
-            and not self.reserve_wait
-        ):
-            cmds.append({"redeem": 5000})
+    
+        nav = input_data["nav"] if lp else None
+        if input_data["price"] is not None and nav is not None:
+            price = input_data["price"]
+            if price < nav - 0.05:
+                (x, y) = SolveDeltas(lp).calc(0.98)
+                cmds.append({"swap1to0": y})
+            elif price > nav + 0.05:
+                (x, y) = SolveDeltas(lp).calc(1.02)
+                cmds.append({"swap0to1": x})
+            if (
+                price >= nav - 0.05 and
+                self.reserve_tkn1 <= 5000 and
+                not self.reserve_wait
+            ):
+                cmds.append({"redeem": 5000})
         return cmds
 
 
