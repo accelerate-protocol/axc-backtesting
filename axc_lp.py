@@ -198,16 +198,20 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     return (np.array(lp_prices), np.array(lp_liquidity), adapter.log)
 
 def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
-    lp_price_samples = np.zeros((npaths, nsteps), dtype=np.float64)
-    lp_liquidity_samples = np.zeros((npaths, nsteps), dtype=np.float64)
+    lp_price_samples = []
+    lp_liquidity_samples = []
     adapter_logs = []
     for i in trange(npaths):
-        (lp, tkn0, tkn1) = setup_lp(tenv, lp_params)
-        (lp_prices, lp_liquidity, adapter_log) = do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class)
-        lp_price_samples[i] = lp_prices
-        lp_liquidity_samples[i] = lp_liquidity
+        lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
+        lp_prices, lp_liquidity, adapter_log = do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class)
+        lp_price_samples.append(lp_prices)
+        lp_liquidity_samples.append(lp_liquidity)
         adapter_logs.append(adapter_log)
-    return (lp_price_samples, lp_liquidity_samples, adapter_logs)
+    return (
+        np.array(lp_price_samples),
+        np.array(lp_liquidity_samples),
+        adapter_logs
+    )
 
 def plot_path(lp_prices, lp_liquidity):
     fig = plt.figure(figsize = (10, 5))
