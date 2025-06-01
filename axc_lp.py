@@ -171,27 +171,31 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     adapter = AlgoBotAdapter(lp, bot_address[0], bot, tkn0, tkn1)
     # Set up liquidity pool
     frac_reserve = 0.05
-    lp_prices = np.array([], dtype=np.float64)
-    lp_liquidity = np.array([], dtype=np.float64)
+    lp_prices = []
+    lp_liquidity = []
+
+    swap_size = tenv.swap_size
+    deltas = TokenDeltaModel(swap_size)
+    rnd_swap_amounts = [deltas.delta() for _ in range(nsteps)]
     # Run simulation
-    for i in range(nsteps):
+    for step in range(nsteps):
         accounts = MockAddress().apply(50)
         select_tkn = EventSelectionModel().bi_select(tenv.tkn_prob)
         rnd_add_amt = TokenDeltaModel(tenv.swap_size).delta()
-        rnd_swap_amt = TokenDeltaModel(tenv.swap_size).delta()
         user_add = random.choice(accounts)
         user_swap = random.choice(accounts)
         try:
-            out = Swap().apply(lp, tkn0 if select_tkn == 0 else tkn1, user_swap, rnd_swap_amt)
+            out = Swap().apply(lp, tkn0 if select_tkn == 0 else tkn1, user_swap,
+                               rnd_swap_amounts[step])
 #            lp.summary()
 #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
         except AssertionError:
 #            print(traceback.format_exc())
             pass
-        lp_prices = np.append(lp_prices, [lp.get_price(tkn0)])
-        lp_liquidity = np.append(lp_liquidity, [lp.get_liquidity()])
+        lp_prices.append(lp.get_price(tkn0))
+        lp_liquidity.append(lp.get_liquidity())
         adapter.run_step()
-    return (lp_prices, lp_liquidity, adapter.log)
+    return (np.array(lp_prices), np.array(lp_liquidity), adapter.log)
 
 def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
     lp_price_samples = np.zeros((npaths, nsteps), dtype=np.float64)
@@ -240,32 +244,47 @@ def plot_distribution(samples, title='Price (TKN)', ylim=[0.75, 1.5] ):
     P_ax.set_ylabel("Price (TKN/USDT)")
     P_ax.set_ylim(ylim)
 
-def dump_liquidity(lp, tkn0, tkn1):
-    liquidity = {}
-    df_liq = pd.DataFrame(columns=['tick', 'price', 'liquidity'])
-    for k, pos in enumerate(lp.ticks):
-        price = UniV3Helper().tick_to_price(pos)
-        liq = lp.ticks[pos].liquidityGross/10**18
-        df_liq.loc[k] = [pos,price,liq]
+def dump_liquidity(lp, tkn0, tkn1) -> pd.DataFrame:
+    """
+    Dumps liquidity data from Uniswap V3 pool into DataFrame.
 
-    center_pos = UniV3Helper().price_to_tick(lp.get_price(tkn1))
-    price = lp.get_price(tkn1)
-    df_liq.loc[k+1] = [center_pos,price,0]
+    Args:
+        lp (LiquidityPool): The Uniswap V3 liquidity pool instance
+        tkn0 (str): Token address for the first token
+        tkn1 (str): Token address for the second token
 
-    df_liq.sort_values(by=['price'], inplace=True)
-    df_liq.reset_index(drop=True, inplace=True)
+    Returns:
+        DataFrame: A DataFrame with columns 'price' and 'liquidity',
+            where each row represents a position in the order book.
+    """
 
+    try:
+        current_price = lp.get_price(tkn1)
+    except:
+        print(f"Error getting price for {tkn1}")
+        return pd.DataFrame()
+
+    positions = lp.ticks
+    prices = [UniV3Helper().tick_to_price(pos) for pos in positions]
+    center_pos = UniV3Helper().price_to_tick(current_price)
     side_arr = []
-    for tick in df_liq['tick'].values:
-        if (tick > center_pos):
+    for pos in positions:
+        if pos > center_pos:
             side_arr.append('asks')
-        elif (tick < center_pos):
+        elif pos < center_pos:
             side_arr.append('bids')
         else:
             side_arr.append('center')
-    df_liq['side'] = side_arr
-    idx = df_liq.index[df_liq['side'] == 'center']
-    df_liq.drop(idx[0], inplace=True)
+
+    df_liq = pd.DataFrame({
+        'price': prices,
+        'side': side_arr,
+        'liquidity': [lp.ticks[pos].liquidityGross / 10**18 for pos in positions]
+    })
+
+    if 'center' in side_arr:
+        df_liq = df_liq[~df_liq['side'] == 'center']
+
     return df_liq
 
 def plot_liquidity(df_liq):
