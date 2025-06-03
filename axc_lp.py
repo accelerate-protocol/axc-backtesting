@@ -2,29 +2,27 @@
 # Copyright (C) 2025 AXC Laboratories
 
 import random
-import ipywidgets as widgets
 from dataclasses import dataclass
 
+import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc
-
+from axc_algobot import AlgoBot, AlgoBotAdapter, NullAlgoBot
 from tqdm.autonotebook import tqdm, trange
 from uniswappy import (
-    UniV3Utils,
     ERC20,
-    UniswapFactory,
     AddLiquidity,
-    MockAddress,
-    TokenDeltaModel,
     EventSelectionModel,
+    MockAddress,
     Swap,
-    UniV3Helper,
+    TokenDeltaModel,
     UniswapExchangeData,
+    UniswapFactory,
+    UniV3Helper,
+    UniV3Utils,
 )
-from axc_algobot import NullAlgoBot, AlgoBotAdapter, AlgoBot
-
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -153,7 +151,8 @@ def do_calc1(tenv):
             (lp, tkn0, _) = setup_lp(
                 tenv,
                 [
-                    [tenv.reserve * (1.0 - frac_reserve), "min_tick", "max_tick"],
+                    [tenv.reserve * (1.0 - frac_reserve),
+                     "min_tick", "max_tick"],
                     [tenv.reserve * frac_reserve, insurance_lower, 1.0],
                 ],
             )
@@ -270,13 +269,15 @@ def plot_path(lp_prices, lp_liquidity):
 
 
 def plot_distribution(samples, title="Price (TKN)", ylow=0.75, yhigh=1.5):
-    fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
+    fig, (p_ax) = plt.subplots(
+        nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
 
     pymc.gp.util.plot_gp_dist(
         ax=p_ax, x=xaxis, samples=samples, palette="cool", plot_samples=False
     )
-    p_ax.plot(xaxis, np.mean(samples, axis=0), color="w", linewidth=3, label="Price")
+    p_ax.plot(xaxis, np.mean(samples, axis=0),
+              color="w", linewidth=3, label="Price")
     p_ax.set_title(title)
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
@@ -355,33 +356,28 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
 
     plt.tight_layout()
 
+
 def run_paths(tenv):
     params = [
-    [
-            [tenv.user_lp, "min_tick", "max_tick"]
-    ], [
+        [[tenv.user_lp, "min_tick", "max_tick"]],
+        [
             [tenv.user_lp, "min_tick", "max_tick"],
-        [tenv.reserve, tenv.reserve_lower, tenv.nav]
-    ], [
-            [tenv.user_lp, "min_tick", "max_tick"]
-    ], [
-        [tenv.user_lp, "min_tick", "max_tick"],
-        [tenv.reserve, tenv.reserve_lower, tenv.nav] 
-    ]
+            [tenv.reserve, tenv.reserve_lower, tenv.nav],
+        ],
+        [[tenv.user_lp, "min_tick", "max_tick"]],
+        [
+            [tenv.user_lp, "min_tick", "max_tick"],
+            [tenv.reserve, tenv.reserve_lower, tenv.nav],
+        ],
     ]
 
-    bots = [
-        NullAlgoBot,
-        NullAlgoBot,
-        AlgoBot,
-        AlgoBot
-    ]
+    bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
     random.seed(42)
     lp_price_samples = []
     lp_liquidity_samples = []
     adapter_log = []
-    for (param, bot) in tqdm(zip(params, bots), total=len(params)):
+    for param, bot in tqdm(zip(params, bots), total=len(params)):
         (lp_price_sample, lp_liquidity_sample, adapter_logs) = do_paths(
             tenv, 50, 500, param, bot
         )
@@ -390,21 +386,23 @@ def run_paths(tenv):
         adapter_logs.append(adapter_log)
     return lp_price_samples, lp_liquidity_samples, adapter_logs
 
+
 def plot_samples(lp_price_samples, lp_liquidity_samples, adapter_logs):
     return [
-        plot_distribution(sample, f"Scenario {i+1}", 0.1, 3.0) \
+        plot_distribution(sample, f"Scenario {i + 1}", 0.1, 3.0)
         for (i, sample) in enumerate(lp_price_samples)
     ]
-        
-    
+
+
 def runme(widgets):
     tenv = token_scenario_baseline
-    tenv.token_prob = widgets['token_prob'].value
-    tenv.swap_size = widgets['swap_size'].value
-    with widgets['output']:
-        lp_price_samples, lp_liquidity_samples, adapter_logs = \
-            run_paths(tenv)
+    tenv.token_prob = widgets["token_prob"].value
+    tenv.swap_size = widgets["swap_size"].value
+    widgets['output'].clear_output()
+    with widgets["output"]:
+        lp_price_samples, lp_liquidity_samples, adapter_logs = run_paths(tenv)
         plot_samples(lp_price_samples, lp_liquidity_samples, adapter_logs)
+
 
 __all__ = [
     "plotme",
@@ -421,5 +419,5 @@ __all__ = [
     "plot_distribution",
     "token_scenario_baseline",
     "run_paths",
-    "runme"
+    "runme",
 ]
