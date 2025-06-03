@@ -48,7 +48,7 @@ class AlgoBot(AbstractAlgoBot):
         cmds = []
         if input_data["nsteps"] < self.wait:
             return {}
-    
+
         nav = input_data["nav"] if lp else None
         if input_data["price"] is not None and nav is not None:
             price = input_data["price"]
@@ -59,9 +59,9 @@ class AlgoBot(AbstractAlgoBot):
                 (x, y) = SolveDeltas(lp).calc(1.02)
                 cmds.append({"swap0to1": x})
             if (
-                price >= nav - 0.05 and
-                self.reserve_tkn1 <= 5000 and
-                not self.reserve_wait
+                price >= nav - 0.05
+                and self.reserve_tkn1 <= 5000
+                and not self.reserve_wait
             ):
                 cmds.append({"redeem": 5000})
         return cmds
