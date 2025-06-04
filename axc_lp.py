@@ -125,17 +125,18 @@ def do_calc(tenv):
         for swap in np.geomspace(100, tenv.usdt_in, num=100):
             (lp, tkn0, _) = setup_lp(
                 tenv,
-                [[tenv.user_lp, "min_tick", "max_tick"],
-                 [tenv.reserve, lower, 1.0]],
+                [[tenv.user_lp, "min_tick", "max_tick"], [tenv.reserve, lower, 1.0]],
             )
             try:
                 out = Swap().apply(lp, tkn0, tenv.user, swap)
-                results.append({
-                    "lower": lower,
-                    "swap": swap,
-                    "out": out,
-                    "price": float(out) / float(swap),
-                })
+                results.append(
+                    {
+                        "lower": lower,
+                        "swap": swap,
+                        "out": out,
+                        "price": float(out) / float(swap),
+                    }
+                )
             except AssertionError:
                 pass
     return pd.DataFrame(results)
@@ -149,21 +150,20 @@ def do_calc1(tenv):
             (lp, tkn0, _) = setup_lp(
                 tenv,
                 [
-                    [
-                        tenv.reserve *
-                        (1.0 - frac_reserve), "min_tick", "max_tick"
-                    ],
+                    [tenv.reserve * (1.0 - frac_reserve), "min_tick", "max_tick"],
                     [tenv.reserve * frac_reserve, insurance_lower, 1.0],
                 ],
             )
             try:
                 out = Swap().apply(lp, tkn0, tenv.user, swap)
-                results.append({
-                    "lower": frac_reserve * 100,
-                    "swap": swap,
-                    "out": out,
-                    "price": float(out) / float(swap),
-                })
+                results.append(
+                    {
+                        "lower": frac_reserve * 100,
+                        "swap": swap,
+                        "out": out,
+                        "price": float(out) / float(swap),
+                    }
+                )
             except AssertionError:
                 pass
     return pd.DataFrame(results)
@@ -176,15 +176,32 @@ def do_calc2(tenv, params, names):
             (lp, tkn0, _) = setup_lp(tenv, param)
             try:
                 out = Swap().apply(lp, tkn0, tenv.user, swap)
-                results.append({
-                    "lower": name,
-                    "swap": swap,
-                    "out": out,
-                    "price": float(out) / float(swap),
-                })
+                results.append(
+                    {
+                        "lower": name,
+                        "swap": swap,
+                        "out": out,
+                        "price": float(out) / float(swap),
+                    }
+                )
             except AssertionError:
                 pass
     return pd.DataFrame(results)
+
+
+def make_arrays(lists):
+    return np.array(
+        [
+            np.pad(
+                lst,
+                (0, max(0, max_len - len(lst))),
+                "constant",
+                constant_values=(np.nan,),
+            )
+            for lst in lists
+        ],
+        dtype=float,
+    )
 
 
 def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
@@ -207,8 +224,9 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
         #        user_add = random.choice(accounts)
         user_swap = random.choice(accounts)
         try:
-            Swap().apply(lp, tkn0 if select_tkn == 0 else tkn1, user_swap,
-                         rnd_swap_amounts[step])
+            Swap().apply(
+                lp, tkn0 if select_tkn == 0 else tkn1, user_swap, rnd_swap_amounts[step]
+            )
         #            lp.summary()
         #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
         except AssertionError:
@@ -217,38 +235,40 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
         lp_prices.append(lp.get_price(tkn0))
         lp_liquidity.append(lp.get_liquidity())
         adapter.run_step()
-    return (np.array(lp_prices), np.array(lp_liquidity), adapter.log)
+    return (np.array(lp_prices), np.array(lp_liquidity),
+        np.array(adapter.log['reserve0']),
+        np.array(adapter.log['reserve1']))
 
 
 def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
     lp_price_samples = []
     lp_liquidity_samples = []
-    adapter_logs = []
+    reserve0_samples = []
+    reserve1_samples = []
     for i in trange(npaths):
         lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
-        lp_prices, lp_liquidity, adapter_log = do_sim(tenv, lp, tkn0, tkn1,
-                                                      nsteps, bot_class)
+        lp_prices, lp_liquidity, reserve0, reserve1 = do_sim(
+            tenv, lp, tkn0, tkn1, nsteps, bot_class
+        )
         lp_price_samples.append(lp_prices)
         lp_liquidity_samples.append(lp_liquidity)
-        adapter_logs.append(adapter_log)
+        reserve0_samples.append(reserve0)
+        reserve1_samples.append(reserve1)
     return (np.array(lp_price_samples), np.array(lp_liquidity_samples),
-            adapter_logs)
+        np.array(reserve0), np.array(reserve1))
 
 
 def plot_path(lp_prices, lp_liquidity):
     fig = plt.figure(figsize=(10, 5))
 
-    fig, (price_ax, liq_ax) = plt.subplots(nrows=2,
-                                           sharex=False,
-                                           sharey=False,
-                                           figsize=(12, 8))
+    fig, (price_ax, liq_ax) = plt.subplots(
+        nrows=2, sharex=False, sharey=False, figsize=(12, 8)
+    )
 
     x_val = np.arange(0, len(lp_prices) + 1)
-    price_ax.plot(x_val[1:-1],
-                  lp_prices[1:],
-                  color="b",
-                  linestyle="dashed",
-                  label="lp price")
+    price_ax.plot(
+        x_val[1:-1], lp_prices[1:], color="b", linestyle="dashed", label="lp price"
+    )
     price_ax.set_ylabel("Price (TKN/USDT)", size=14)
     price_ax.set_xlabel("Time sample", size=10)
     price_ax.legend()
@@ -267,22 +287,13 @@ def plot_path(lp_prices, lp_liquidity):
 
 
 def plot_distribution(samples, title="Price (TKN)", ylow=0.75, yhigh=1.5):
-    fig, (p_ax) = plt.subplots(nrows=1,
-                               sharex=False,
-                               sharey=False,
-                               figsize=(10, 6))
+    fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
 
-    pymc.gp.util.plot_gp_dist(ax=p_ax,
-                              x=xaxis,
-                              samples=samples,
-                              palette="cool",
-                              plot_samples=False)
-    p_ax.plot(xaxis,
-              np.mean(samples, axis=0),
-              color="w",
-              linewidth=3,
-              label="Price")
+    pymc.gp.util.plot_gp_dist(
+        ax=p_ax, x=xaxis, samples=samples, palette="cool", plot_samples=False
+    )
+    p_ax.plot(xaxis, np.mean(samples, axis=0), color="w", linewidth=3, label="Price")
     p_ax.set_title(title)
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
@@ -323,14 +334,13 @@ def dump_liquidity(lp, tkn0, tkn1) -> pd.DataFrame:
         else:
             side_arr.append("center")
 
-    df_liq = pd.DataFrame({
-        "price":
-        prices,
-        "side":
-        side_arr,
-        "liquidity":
-        [lp.ticks[pos].liquidityGross / 10**18 for pos in positions],
-    })
+    df_liq = pd.DataFrame(
+        {
+            "price": prices,
+            "side": side_arr,
+            "liquidity": [lp.ticks[pos].liquidityGross / 10**18 for pos in positions],
+        }
+    )
 
     if "center" in side_arr:
         df_liq = df_liq[~df_liq["side"] == "center"]
@@ -345,12 +355,9 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
     prices = df_liq["price"].values
     liquidity = df_liq["liquidity"].values
 
-    book_ax.bar(prices,
-                liquidity,
-                color="steelblue",
-                width=0.0005,
-                label="liquidity",
-                alpha=0.7)
+    book_ax.bar(
+        prices, liquidity, color="steelblue", width=0.0005, label="liquidity", alpha=0.7
+    )
     book_ax.axvline(
         x=current_price,
         color="mediumvioletred",
@@ -385,14 +392,18 @@ def run_paths(tenv):
     random.seed(42)
     lp_price_samples = []
     lp_liquidity_samples = []
-    adapter_log = []
+    reserve0_samples = []
+    reserve1_samples = []
     for param, bot in tqdm(zip(params, bots), total=len(params)):
-        (lp_price_sample, lp_liquidity_sample,
-         adapter_logs) = do_paths(tenv, 50, 500, param, bot)
+        (lp_price_sample, lp_liquidity_sample, reserve0, reserve1) = do_paths(
+            tenv, 50, 500, param, bot
+        )
         lp_price_samples.append(lp_price_sample)
         lp_liquidity_samples.append(lp_liquidity_sample)
-        adapter_logs.append(adapter_log)
-    return lp_price_samples, lp_liquidity_samples, adapter_logs
+        reserve0_samples.append(reserve0)
+        reserve1_samples.append(reserve1)
+    return (lp_price_samples, lp_liquidity_samples, reserve0_samples,
+            reserve1_samples)
 
 
 def plot_samples(lp_price_samples, lp_liquidity_samples, adapter_logs):
