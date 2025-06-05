@@ -235,9 +235,12 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
         lp_prices.append(lp.get_price(tkn0))
         lp_liquidity.append(lp.get_liquidity())
         adapter.run_step()
-    return (np.array(lp_prices), np.array(lp_liquidity),
-        np.array(adapter.log['reserve0']),
-        np.array(adapter.log['reserve1']))
+    return (
+        np.array(lp_prices),
+        np.array(lp_liquidity),
+        np.array(adapter.log["reserve0"]),
+        np.array(adapter.log["reserve1"]),
+    )
 
 
 def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
@@ -254,8 +257,12 @@ def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
         lp_liquidity_samples.append(lp_liquidity)
         reserve0_samples.append(reserve0)
         reserve1_samples.append(reserve1)
-    return (np.array(lp_price_samples), np.array(lp_liquidity_samples),
-        np.array(reserve0), np.array(reserve1))
+    return (
+        np.array(lp_price_samples),
+        np.array(lp_liquidity_samples),
+        np.array(reserve0_samples),
+        np.array(reserve1_samples),
+    )
 
 
 def plot_path(lp_prices, lp_liquidity):
@@ -373,21 +380,23 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
     plt.tight_layout()
 
 
-def run_paths(tenv):
-    params = [
-        [[tenv.user_lp, "min_tick", "max_tick"]],
-        [
-            [tenv.user_lp, "min_tick", "max_tick"],
-            [tenv.reserve, tenv.reserve_lower, tenv.nav],
-        ],
-        [[tenv.user_lp, "min_tick", "max_tick"]],
-        [
-            [tenv.user_lp, "min_tick", "max_tick"],
-            [tenv.reserve, tenv.reserve_lower, tenv.nav],
-        ],
-    ]
+def run_paths(tenv, params=None, bots=None):
+    if params is None:
+        params = [
+            [[tenv.user_lp, "min_tick", "max_tick"]],
+            [
+                [tenv.user_lp, "min_tick", "max_tick"],
+                [tenv.reserve, tenv.reserve_lower, tenv.nav],
+            ],
+            [[tenv.user_lp, "min_tick", "max_tick"]],
+            [
+                [tenv.user_lp, "min_tick", "max_tick"],
+                [tenv.reserve, tenv.reserve_lower, tenv.nav],
+            ],
+        ]
 
-    bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
+    if bots is None:
+        bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
     random.seed(42)
     lp_price_samples = []
@@ -402,13 +411,12 @@ def run_paths(tenv):
         lp_liquidity_samples.append(lp_liquidity_sample)
         reserve0_samples.append(reserve0)
         reserve1_samples.append(reserve1)
-    return (lp_price_samples, lp_liquidity_samples, reserve0_samples,
-            reserve1_samples)
+    return (lp_price_samples, lp_liquidity_samples, reserve0_samples, reserve1_samples)
 
 
-def plot_samples(lp_price_samples, lp_liquidity_samples, adapter_logs):
+def plot_samples(lp_price_samples, ylow=0.1, yhigh=3.0):
     return [
-        plot_distribution(sample, f"Scenario {i + 1}", 0.1, 3.0)
+        plot_distribution(sample, f"Scenario {i + 1}", ylow, yhigh)
         for (i, sample) in enumerate(lp_price_samples)
     ]
 
@@ -419,8 +427,21 @@ def runme(widgets):
     tenv.swap_size = widgets["swap_size"].value
     widgets["output"].clear_output()
     with widgets["output"]:
-        lp_price_samples, lp_liquidity_samples, adapter_logs = run_paths(tenv)
-        plot_samples(lp_price_samples, lp_liquidity_samples, adapter_logs)
+        lp_price_samples, lp_liquidity_samples, reserve0_samples, reserve1_samples = (
+            run_paths(
+                tenv,
+                [
+                    [
+                        [tenv.user_lp, "min_tick", "max_tick"],
+                        [tenv.reserve, tenv.reserve_lower, tenv.nav],
+                    ]
+                ],
+                [AlgoBot],
+            )
+        )
+        plot_samples(lp_price_samples)
+        plot_samples(reserve0_samples, 0, 20000)
+        plot_samples(reserve1_samples, 0, 20000)
 
 
 __all__ = [
