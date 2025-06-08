@@ -236,32 +236,20 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
         lp_liquidity.append(lp.get_liquidity())
         adapter.run_step()
     return (
-        np.array(lp_prices),
-        np.array(lp_liquidity),
-        np.array(adapter.log["reserve0"]),
-        np.array(adapter.log["reserve1"]),
+        np.array([lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]])
     )
 
 
 def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
-    lp_price_samples = []
-    lp_liquidity_samples = []
-    reserve0_samples = []
-    reserve1_samples = []
+    samples = []
     for i in trange(npaths):
         lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
-        lp_prices, lp_liquidity, reserve0, reserve1 = do_sim(
+        sample = do_sim(
             tenv, lp, tkn0, tkn1, nsteps, bot_class
         )
-        lp_price_samples.append(lp_prices)
-        lp_liquidity_samples.append(lp_liquidity)
-        reserve0_samples.append(reserve0)
-        reserve1_samples.append(reserve1)
+        samples.append(sample)
     return (
-        np.array(lp_price_samples),
-        np.array(lp_liquidity_samples),
-        np.array(reserve0_samples),
-        np.array(reserve1_samples),
+        x for x in np.transpose(np.array(samples), axes=[1,0,2])
     )
 
 
