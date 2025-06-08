@@ -2,7 +2,7 @@
 # Copyright (C) 2025 AXC Laboratories
 
 from dataclasses import dataclass
-
+import copy
 from uniswappy import SolveDeltas, Swap
 
 
@@ -12,20 +12,19 @@ class AlgoBotParams:
     reserve_tkn1: int
 
 
-default_params = AlgoBotParams(reserve_tkn0=10000, reserve_tkn1=10000)
+default_params = AlgoBotParams(reserve_tkn0=0, reserve_tkn1=0)
 
 
 class AbstractAlgoBot:
     def __init__(self, params=default_params):
-        self.reserve_tkn0 = params.reserve_tkn0
-        self.reserve_tkn1 = params.reserve_tkn1
+        self.params = copy.deepcopy(params)
 
     def run_algo(self, lp, input_data):
         return {}
 
     def change_reserves(self, amount0, amount1):
-        self.reserve_tkn0 += amount0
-        self.reserve_tkn1 += amount1
+        self.params.reserve_tkn0 += amount0
+        self.params.reserve_tkn1 += amount1
 
     @classmethod
     def factory(cls, params=default_params):
@@ -40,8 +39,6 @@ class NullAlgoBot(AbstractAlgoBot):
 class AlgoBot(AbstractAlgoBot):
     def __init__(self, params=default＿params):
         super().__init__(params)
-        self.reserve_tkn0 = params.reserve_tkn0
-        self.reserve_tkn1 = params.reserve_tkn1
         self.reserve_wait = False
         self.wait = 0
 
@@ -61,7 +58,7 @@ class AlgoBot(AbstractAlgoBot):
                 cmds.append({"swap0to1": x})
             if (
                 price >= nav - 0.05
-                and self.reserve_tkn1 <= 5000
+                and self.params.reserve_tkn1 <= -5000
                 and not self.reserve_wait
             ):
                 cmds.append({"redeem": 5000})
@@ -107,11 +104,11 @@ class AlgoBotAdapter:
                         pass
                 if k == "redeem":
                     self.redeem_queue[self.nsteps] = v
-                    self.bot.change_reserves(0, -v)
+                    self.bot.change_reserves(-v, 0)
             new_redeem_queue = {}
             for k, v in self.redeem_queue.items():
                 if self.nsteps >= k + self.delay:
-                    self.bot.change_reserves(v * self.nav, 0)
+                    self.bot.change_reserves(0, v * self.nav)
                     self.log["redemption"][self.nsteps] = v
                 else:
                     new_redeem_queue[k] = v
@@ -124,8 +121,8 @@ class AlgoBotAdapter:
             self.log["cmds"][self.nsteps] = cmds
         self.exec(cmds)
         self.nsteps = self.nsteps + 1
-        self.log["reserve0"].append(self.bot.reserve_tkn0)
-        self.log["reserve1"].append(self.bot.reserve_tkn1)
+        self.log["reserve0"].append(self.bot.params.reserve_tkn0)
+        self.log["reserve1"].append(self.bot.params.reserve_tkn1)
 
 
 __all__ = ["AlgoBot", "AlgoBotAdapter", "NullAlgoBot"]

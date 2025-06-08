@@ -293,7 +293,7 @@ def plot_path(lp_prices, lp_liquidity):
     plt.tight_layout()
 
 
-def plot_distribution(samples, title="Price (TKN)", ylow=0.75, yhigh=1.5):
+def plot_distribution(samples, title="Price (TKN)", ylow=None, yhigh=None):
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
 
@@ -305,7 +305,7 @@ def plot_distribution(samples, title="Price (TKN)", ylow=0.75, yhigh=1.5):
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
     p_ax.set_ylabel("Price (TKN/USDT)")
-    p_ax.set_ylim([ylow, yhigh])
+    p_ax.set_ylim(bottom=ylow, top=yhigh)
     plt.show()
 
 
@@ -414,7 +414,7 @@ def run_paths(tenv, params=None, bots=None):
     return (lp_price_samples, lp_liquidity_samples, reserve0_samples, reserve1_samples)
 
 
-def plot_samples(lp_price_samples, ylow=0.1, yhigh=3.0):
+def plot_samples(lp_price_samples, ylow=None, yhigh=None):
     return [
         plot_distribution(sample, f"Scenario {i + 1}", ylow, yhigh)
         for (i, sample) in enumerate(lp_price_samples)
@@ -440,8 +440,8 @@ def runme(widgets):
             )
         )
         plot_samples(lp_price_samples)
-        plot_samples(reserve0_samples, 0, 20000)
-        plot_samples(reserve1_samples, 0, 20000)
+        plot_samples(reserve0_samples)
+        plot_samples(reserve1_samples)
 
 
 __all__ = [
@@ -460,4 +460,5 @@ __all__ = [
     "token_scenario_baseline",
     "run_paths",
     "runme",
+    "plot_samples"
 ]
