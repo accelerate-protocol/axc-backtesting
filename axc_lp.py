@@ -46,6 +46,12 @@ class TokenScenario:
     tkn_prob: float
     swap_size: int
 
+@dataclass
+class SampleResults:
+    price: np.array
+    liquidity: np.array
+    reserve0: np.array
+    reserve1: np.array
 
 FEE = UniV3Utils.FeeAmount.MEDIUM
 TICK_SPACING = UniV3Utils.TICK_SPACINGS[FEE]
@@ -248,8 +254,12 @@ def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
             tenv, lp, tkn0, tkn1, nsteps, bot_class
         )
         samples.append(sample)
-    return (
-        x for x in np.transpose(np.array(samples), axes=[1,0,2])
+    samples_array =  np.transpose(np.array(samples), axes=[1,0,2])
+    return SampleResults(
+        price=samples_array[0],
+        liquidity=samples_array[1],
+        reserve0=samples_array[2],
+        reserve1=samples_array[3]
     )
 
 
@@ -387,19 +397,13 @@ def run_paths(tenv, params=None, bots=None):
         bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
     random.seed(42)
-    lp_price_samples = []
-    lp_liquidity_samples = []
-    reserve0_samples = []
-    reserve1_samples = []
+    samples = []
     for param, bot in tqdm(zip(params, bots), total=len(params)):
-        (lp_price_sample, lp_liquidity_sample, reserve0, reserve1) = do_paths(
+        sample = do_paths(
             tenv, 50, 500, param, bot
         )
-        lp_price_samples.append(lp_price_sample)
-        lp_liquidity_samples.append(lp_liquidity_sample)
-        reserve0_samples.append(reserve0)
-        reserve1_samples.append(reserve1)
-    return (lp_price_samples, lp_liquidity_samples, reserve0_samples, reserve1_samples)
+        samples.append(sample)
+    return samples
 
 
 def plot_samples(lp_price_samples, ylow=None, yhigh=None):
@@ -415,7 +419,7 @@ def runme(widgets):
     tenv.swap_size = widgets["swap_size"].value
     widgets["output"].clear_output()
     with widgets["output"]:
-        lp_price_samples, lp_liquidity_samples, reserve0_samples, reserve1_samples = (
+        samples = (
             run_paths(
                 tenv,
                 [
@@ -427,9 +431,9 @@ def runme(widgets):
                 [AlgoBot],
             )
         )
-        plot_samples(lp_price_samples)
-        plot_samples(reserve0_samples)
-        plot_samples(reserve1_samples)
+        plot_samples([samples[0].price])
+        plot_samples([samples[0].reserve0])
+        plot_samples([samples[0].reserve1])
 
 
 __all__ = [
