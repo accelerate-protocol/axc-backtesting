@@ -3,6 +3,7 @@
 
 import random
 from dataclasses import dataclass
+from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,6 +46,9 @@ class TokenScenario:
     seed: int
     tkn_prob: float
     swap_size: int
+    samples: int
+    steps: int
+
 
 @dataclass
 class SampleResults:
@@ -52,6 +56,7 @@ class SampleResults:
     liquidity: np.array
     reserve0: np.array
     reserve1: np.array
+
 
 FEE = UniV3Utils.FeeAmount.MEDIUM
 TICK_SPACING = UniV3Utils.TICK_SPACINGS[FEE]
@@ -73,6 +78,8 @@ token_scenario_baseline = TokenScenario(
     seed=42,
     tkn_prob=0.5,
     swap_size=1000,
+    samples=50,
+    steps=500,
 )
 
 
@@ -214,7 +221,12 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     # Set up bot
     bot = bot_class.factory()
     bot_address = MockAddress().apply(1)
-    adapter = AlgoBotAdapter(lp, bot_address[0], bot, tkn0, tkn1)
+    bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
+
+    adapters = [
+        AlgoBotAdapter(lp, bot_address[0], bot_class.factory(), tkn0, tkn1)
+        for bot_class in bot_class_list
+    ]
     # Set up liquidity pool
     lp_prices = []
     lp_liquidity = []
@@ -223,6 +235,8 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
     deltas = TokenDeltaModel(swap_size)
     rnd_swap_amounts = [deltas.delta() for _ in range(nsteps)]
     # Run simulation
+    for adapter in adapters:
+        adapter.init_step()
     for step in range(nsteps):
         accounts = MockAddress().apply(50)
         select_tkn = EventSelectionModel().bi_select(tenv.tkn_prob)
@@ -240,26 +254,25 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
             pass
         lp_prices.append(lp.get_price(tkn0))
         lp_liquidity.append(lp.get_liquidity())
-        adapter.run_step()
-    return (
-        np.array([lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]])
+        for adapter in adapters:
+            adapter.run_step()
+    return np.array(
+        [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]]
     )
 
 
-def do_paths(tenv, npaths, nsteps, lp_params, bot_class=NullAlgoBot):
+def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
     samples = []
-    for i in trange(npaths):
+    for i in trange(tenv.samples):
         lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
-        sample = do_sim(
-            tenv, lp, tkn0, tkn1, nsteps, bot_class
-        )
+        sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class)
         samples.append(sample)
-    samples_array =  np.transpose(np.array(samples), axes=[1,0,2])
+    samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
         price=samples_array[0],
         liquidity=samples_array[1],
         reserve0=samples_array[2],
-        reserve1=samples_array[3]
+        reserve1=samples_array[3],
     )
 
 
@@ -396,12 +409,10 @@ def run_paths(tenv, params=None, bots=None):
     if bots is None:
         bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
-    random.seed(42)
     samples = []
     for param, bot in tqdm(zip(params, bots), total=len(params)):
-        sample = do_paths(
-            tenv, 50, 500, param, bot
-        )
+        random.seed(tenv.seed)
+        sample = do_paths(tenv, param, bot)
         samples.append(sample)
     return samples
 
@@ -419,17 +430,15 @@ def runme(widgets):
     tenv.swap_size = widgets["swap_size"].value
     widgets["output"].clear_output()
     with widgets["output"]:
-        samples = (
-            run_paths(
-                tenv,
+        samples = run_paths(
+            tenv,
+            [
                 [
-                    [
-                        [tenv.user_lp, "min_tick", "max_tick"],
-                        [tenv.reserve, tenv.reserve_lower, tenv.nav],
-                    ]
-                ],
-                [AlgoBot],
-            )
+                    [tenv.user_lp, "min_tick", "max_tick"],
+                    [tenv.reserve, tenv.reserve_lower, tenv.nav],
+                ]
+            ],
+            [AlgoBot],
         )
         plot_samples([samples[0].price])
         plot_samples([samples[0].reserve0])
@@ -452,5 +461,5 @@ __all__ = [
     "token_scenario_baseline",
     "run_paths",
     "runme",
-    "plot_samples"
+    "plot_samples",
 ]

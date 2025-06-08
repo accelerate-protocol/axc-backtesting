@@ -19,8 +19,11 @@ class AbstractAlgoBot:
     def __init__(self, params=default_params):
         self.params = copy.deepcopy(params)
 
+    def init_algo(self, lp=None):
+        return []
+
     def run_algo(self, lp, input_data):
-        return {}
+        return []
 
     def change_reserves(self, amount0, amount1):
         self.params.reserve_tkn0 += amount0
@@ -77,8 +80,7 @@ class AlgoBotAdapter:
         self.delay = 50
         self.redeem_queue = {}
         self.nav = 1.0
-        self.log = {"cmds": {}, "redemption": {},
-                    "reserve0": [], "reserve1": []}
+        self.log = {"cmds": {}, "redemption": {}, "reserve0": [], "reserve1": []}
 
     def import_state(self):
         return {
@@ -114,6 +116,10 @@ class AlgoBotAdapter:
                     new_redeem_queue[k] = v
             self.redeem_queue = new_redeem_queue
 
+    def init_step(self):
+        cmds = self.bot.init_algo(self.lp)
+        self.exec(cmds)
+
     def run_step(self):
         state = self.import_state()
         cmds = self.bot.run_algo(self.lp, state)
@@ -126,4 +132,3 @@ class AlgoBotAdapter:
 
 
 __all__ = ["AlgoBot", "AlgoBotAdapter", "NullAlgoBot"]
-
