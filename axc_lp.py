@@ -4,12 +4,14 @@
 import random
 from dataclasses import dataclass
 from collections.abc import Iterable
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc
 from axc_algobot import AlgoBot, AlgoBotAdapter, NullAlgoBot
+from axc_liquidity import LiquidityBot, LiquidityBotParams
 from tqdm.autonotebook import tqdm, trange
 from uniswappy import (
     ERC20,
@@ -22,7 +24,7 @@ from uniswappy import (
     UniswapFactory,
     UniV3Helper,
     UniV3Utils,
-)
+)  # type: ignore
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -38,9 +40,9 @@ class TokenScenario:
     name1: str
     address0: str
     address1: str
-    tick_spacing: any
-    fee: any
-    init_price: any
+    tick_spacing: Any
+    fee: Any
+    init_price: Any
     nav: float
     reserve_lower: float
     seed: int
@@ -119,74 +121,32 @@ def setup_lp(tenv, pool_params):
     )
     lp = factory.deploy(exchg_data)
     lp.initialize(tenv.init_price)
-    for pool_param in pool_params:
-        AddLiquidity().apply(
-            lp,
-            tkn1,
-            tenv.user,
-            pool_param[0],
-            get_tick(lp, pool_param[1]),
-            get_tick(lp, pool_param[2]),
-        )
+    #    for pool_param in pool_params:
+    #        AddLiquidity().apply(
+    #            lp,
+    #            tkn1,
+    #            tenv.user,
+    #            pool_param[0],
+    #            get_tick(lp, pool_param[1]),
+    #            get_tick(lp, pool_param[2]),
+    #        )
     #    lp.summary()
     return (lp, tkn0, tkn1)
-
-
-def do_calc(tenv):
-    results = []
-    for lower in [0.95, 0.9, 0.8, 0.7, 0.5, 0.1, 0.000001]:
-        for swap in np.geomspace(100, tenv.usdt_in, num=100):
-            (lp, tkn0, _) = setup_lp(
-                tenv,
-                [[tenv.user_lp, "min_tick", "max_tick"], [tenv.reserve, lower, 1.0]],
-            )
-            try:
-                out = Swap().apply(lp, tkn0, tenv.user, swap)
-                results.append(
-                    {
-                        "lower": lower,
-                        "swap": swap,
-                        "out": out,
-                        "price": float(out) / float(swap),
-                    }
-                )
-            except AssertionError:
-                pass
-    return pd.DataFrame(results)
-
-
-def do_calc1(tenv):
-    results = []
-    insurance_lower = 0.95
-    for frac_reserve in np.geomspace(0.0001, 0.99, num=10):
-        for swap in np.geomspace(100, tenv.usdt_in, num=100):
-            (lp, tkn0, _) = setup_lp(
-                tenv,
-                [
-                    [tenv.reserve * (1.0 - frac_reserve), "min_tick", "max_tick"],
-                    [tenv.reserve * frac_reserve, insurance_lower, 1.0],
-                ],
-            )
-            try:
-                out = Swap().apply(lp, tkn0, tenv.user, swap)
-                results.append(
-                    {
-                        "lower": frac_reserve * 100,
-                        "swap": swap,
-                        "out": out,
-                        "price": float(out) / float(swap),
-                    }
-                )
-            except AssertionError:
-                pass
-    return pd.DataFrame(results)
 
 
 def do_calc2(tenv, params, names):
     results = []
     for param, name in zip(params, names):
         for swap in np.geomspace(100, tenv.usdt_in, num=100):
-            (lp, tkn0, _) = setup_lp(tenv, param)
+            (lp, tkn0, tkn1) = setup_lp(tenv, param)
+            adapter = AlgoBotAdapter(
+                lp,
+                tenv.user,
+                [LiquidityBot(LiquidityBotParams(pool_params=param))],
+                tkn0,
+                tkn1,
+            )
+            adapter.init_step()
             try:
                 out = Swap().apply(lp, tkn0, tenv.user, swap)
                 results.append(
@@ -217,14 +177,24 @@ def make_arrays(lists):
     )
 
 
-def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot):
+def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
     # Set up bot
     bot = bot_class.factory()
     bot_address = MockAddress().apply(1)
     bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
+    lp_params = [] if lp_params is None else lp_params
 
     adapters = [
-        AlgoBotAdapter(lp, bot_address[0], bot_class.factory(), tkn0, tkn1)
+        AlgoBotAdapter(
+            lp,
+            bot_address[0],
+            [
+                LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params)),
+                bot_class.factory(),
+            ],
+            tkn0,
+            tkn1,
+        )
         for bot_class in bot_class_list
     ]
     # Set up liquidity pool
@@ -265,7 +235,7 @@ def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
     samples = []
     for i in trange(tenv.samples):
         lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
-        sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class)
+        sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
         samples.append(sample)
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
@@ -447,8 +417,6 @@ def runme(widgets):
 
 __all__ = [
     "plotme",
-    "do_calc",
-    "do_calc1",
     "do_calc2",
     "setup_lp",
     "TokenScenario",

@@ -2,17 +2,26 @@
 # Copyright (C) 2025 AXC Laboratories
 
 from dataclasses import dataclass
+from collections.abc import Iterable
 import copy
-from uniswappy import SolveDeltas, Swap
+from uniswappy import SolveDeltas, Swap, AddLiquidity, UniV3Helper, UniV3Utils
+
+
+def get_tick(lp, x):
+    if x == "min_tick":
+        return UniV3Utils.getMinTick(lp.tickSpacing)
+    if x == "max_tick":
+        return UniV3Utils.getMaxTick(lp.tickSpacing)
+    return UniV3Helper().get_price_tick(lp, 0, x)
 
 
 @dataclass
 class AlgoBotParams:
-    reserve_tkn0: int
-    reserve_tkn1: int
+    reserve_tkn0: int = 0
+    reserve_tkn1: int = 0
 
 
-default_params = AlgoBotParams(reserve_tkn0=0, reserve_tkn1=0)
+default_params = AlgoBotParams()
 
 
 class AbstractAlgoBot:
@@ -69,10 +78,10 @@ class AlgoBot(AbstractAlgoBot):
 
 
 class AlgoBotAdapter:
-    def __init__(self, lp, account, bot, tkn0, tkn1):
+    def __init__(self, lp, account, bots, tkn0, tkn1):
         self.lp = lp
         self.account = account
-        self.bot = bot
+        self.bots = bots if isinstance(bots, Iterable) else [bots]
         self.solver = SolveDeltas(lp)
         self.tkn0 = tkn0
         self.tkn1 = tkn1
@@ -89,46 +98,76 @@ class AlgoBotAdapter:
             "nsteps": self.nsteps,
         }
 
-    def exec(self, cmds):
+    def exec(self, bot, cmds):
         for cmd in cmds:
             for k, v in cmd.items():
                 if k == "swap0to1":
                     try:
                         out = Swap().apply(self.lp, self.tkn0, self.account, v)
-                        self.bot.change_reserves(-v, out)
+                        bot.change_reserves(-v, out)
                     except AssertionError:
                         pass
                 if k == "swap1to0":
                     try:
                         out = Swap().apply(self.lp, self.tkn1, self.account, v)
-                        self.bot.change_reserves(out, -v)
+                        bot.change_reserves(out, -v)
+                    except AssertionError:
+                        pass
+                if k == "addliquidity0":
+                    try:
+                        out = AddLiquidity().apply(
+                            self.lp,
+                            self.tkn0,
+                            self.account,
+                            v[0],
+                            get_tick(self.lp, v[1]),
+                            get_tick(self.lp, v[2]),
+                        )
+                    except AssertionError:
+                        pass
+                if k == "addliquidity1":
+                    try:
+                        out = AddLiquidity().apply(
+                            self.lp,
+                            self.tkn1,
+                            self.account,
+                            v[0],
+                            get_tick(self.lp, v[1]),
+                            get_tick(self.lp, v[2]),
+                        )
                     except AssertionError:
                         pass
                 if k == "redeem":
                     self.redeem_queue[self.nsteps] = v
-                    self.bot.change_reserves(-v, 0)
+                    bot.change_reserves(-v, 0)
             new_redeem_queue = {}
             for k, v in self.redeem_queue.items():
                 if self.nsteps >= k + self.delay:
-                    self.bot.change_reserves(0, v * self.nav)
+                    bot.change_reserves(0, v * self.nav)
                     self.log["redemption"][self.nsteps] = v
                 else:
                     new_redeem_queue[k] = v
             self.redeem_queue = new_redeem_queue
 
     def init_step(self):
-        cmds = self.bot.init_algo(self.lp)
-        self.exec(cmds)
+        for bot in self.bots:
+            cmds = bot.init_algo(self.lp)
+            self.exec(bot, cmds)
 
     def run_step(self):
         state = self.import_state()
-        cmds = self.bot.run_algo(self.lp, state)
-        if cmds:
-            self.log["cmds"][self.nsteps] = cmds
-        self.exec(cmds)
-        self.nsteps = self.nsteps + 1
-        self.log["reserve0"].append(self.bot.params.reserve_tkn0)
-        self.log["reserve1"].append(self.bot.params.reserve_tkn1)
+        reserve0 = 0.0
+        reserve1 = 0.0
+        for bot in self.bots:
+            cmds = bot.run_algo(self.lp, state)
+            if cmds:
+                self.log["cmds"][self.nsteps] = cmds
+            self.exec(bot, cmds)
+            self.nsteps = self.nsteps + 1
+            reserve0 += bot.params.reserve_tkn0
+            reserve1 += bot.params.reserve_tkn1
+        self.log["reserve0"].append(reserve0)
+        self.log["reserve1"].append(reserve1)
 
 
 __all__ = ["AlgoBot", "AlgoBotAdapter", "NullAlgoBot"]
