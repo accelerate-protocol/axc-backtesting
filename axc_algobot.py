@@ -77,8 +77,8 @@ class AlgoBot(AbstractAlgoBot):
         return cmds
 
 
-class AlgoBotAdapter:
-    def __init__(self, lp, account, bots, tkn0, tkn1):
+class BotSimulator:
+    def __init__(self, lp, account, tkn0, tkn1, bots):
         self.lp = lp
         self.account = account
         self.bots = bots if isinstance(bots, Iterable) else [bots]
@@ -170,4 +170,4 @@ class AlgoBotAdapter:
         self.log["reserve1"].append(reserve1)
 
 
-__all__ = ["AlgoBot", "AlgoBotAdapter", "NullAlgoBot"]
+__all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot"]

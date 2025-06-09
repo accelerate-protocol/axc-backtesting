@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc
-from axc_algobot import AlgoBot, AlgoBotAdapter, NullAlgoBot
+from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
 from axc_liquidity import LiquidityBot, LiquidityBotParams
 from tqdm.autonotebook import tqdm, trange
 from uniswappy import (
@@ -29,27 +29,30 @@ from uniswappy import (
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
 
+FEE = UniV3Utils.FeeAmount.MEDIUM
+TICK_SPACING = UniV3Utils.TICK_SPACINGS[FEE]
+INIT_PRICE = UniV3Utils.encodePriceSqrt(1000, 1000)
 
 @dataclass
 class TokenScenario:
-    user: str
-    usdt_in: int
-    user_lp: int
-    reserve: int
-    name0: str
-    name1: str
-    address0: str
-    address1: str
-    tick_spacing: Any
-    fee: Any
-    init_price: Any
-    nav: float
-    reserve_lower: float
-    seed: int
-    tkn_prob: float
-    swap_size: int
-    samples: int
-    steps: int
+    user: str = "user"
+    usdt_in: int = 10**6
+    user_lp: int = 10000
+    reserve: int = 50000
+    name0: str = "TKN"
+    name1: str = "USDT"
+    address0: str = "0x111"
+    address1: str = "0x09"
+    tick_spacing: Any = TICK_SPACING
+    fee: Any = FEE
+    init_price: Any = INIT_PRICE
+    nav: float = 1.0
+    reserve_lower: float = 0.9
+    seed: int = 42
+    tkn_prob: float = 0.5
+    swap_size: int = 1000
+    samples: int = 50
+    steps: int = 500
 
 
 @dataclass
@@ -60,29 +63,8 @@ class SampleResults:
     reserve1: np.array
 
 
-FEE = UniV3Utils.FeeAmount.MEDIUM
-TICK_SPACING = UniV3Utils.TICK_SPACINGS[FEE]
-INIT_PRICE = UniV3Utils.encodePriceSqrt(1000, 1000)
-token_scenario_baseline = TokenScenario(
-    user="user",
-    user_lp=10000,
-    reserve=50000,
-    name0="TKN",
-    name1="USDT",
-    address0="0x111",
-    address1="0x09",
-    usdt_in=10**6,
-    tick_spacing=TICK_SPACING,
-    fee=FEE,
-    init_price=INIT_PRICE,
-    nav=1.0,
-    reserve_lower=0.9,
-    seed=42,
-    tkn_prob=0.5,
-    swap_size=1000,
-    samples=50,
-    steps=500,
-)
+
+token_scenario_baseline = TokenScenario()
 
 
 def plotme(df, legend, annotation="", group="lower", title=""):
@@ -106,7 +88,7 @@ def get_tick(lp, x):
     return UniV3Helper().get_price_tick(lp, 0, x)
 
 
-def setup_lp(tenv, pool_params):
+def setup_lp(tenv):
     factory = UniswapFactory("ETH pool factory", "0x%d")
     tkn0 = ERC20(tenv.name0, tenv.address0)
     tkn1 = ERC20(tenv.name1, tenv.address1)
@@ -121,16 +103,6 @@ def setup_lp(tenv, pool_params):
     )
     lp = factory.deploy(exchg_data)
     lp.initialize(tenv.init_price)
-    #    for pool_param in pool_params:
-    #        AddLiquidity().apply(
-    #            lp,
-    #            tkn1,
-    #            tenv.user,
-    #            pool_param[0],
-    #            get_tick(lp, pool_param[1]),
-    #            get_tick(lp, pool_param[2]),
-    #        )
-    #    lp.summary()
     return (lp, tkn0, tkn1)
 
 
@@ -138,13 +110,13 @@ def do_calc2(tenv, params, names):
     results = []
     for param, name in zip(params, names):
         for swap in np.geomspace(100, tenv.usdt_in, num=100):
-            (lp, tkn0, tkn1) = setup_lp(tenv, param)
-            adapter = AlgoBotAdapter(
+            (lp, tkn0, tkn1) = setup_lp(tenv)
+            adapter = BotSimulator(
                 lp,
                 tenv.user,
-                [LiquidityBot(LiquidityBotParams(pool_params=param))],
                 tkn0,
                 tkn1,
+                [LiquidityBot(LiquidityBotParams(pool_params=param))],
             )
             adapter.init_step()
             try:
@@ -185,15 +157,15 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
     lp_params = [] if lp_params is None else lp_params
 
     adapters = [
-        AlgoBotAdapter(
+        BotSimulator(
             lp,
             bot_address[0],
+            tkn0,
+            tkn1,
             [
                 LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params)),
                 bot_class.factory(),
             ],
-            tkn0,
-            tkn1,
         )
         for bot_class in bot_class_list
     ]
@@ -234,7 +206,7 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
     samples = []
     for i in trange(tenv.samples):
-        lp, tkn0, tkn1 = setup_lp(tenv, lp_params)
+        lp, tkn0, tkn1 = setup_lp(tenv)
         sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
         samples.append(sample)
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
