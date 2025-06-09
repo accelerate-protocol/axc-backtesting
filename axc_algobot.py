@@ -28,7 +28,7 @@ class AbstractAlgoBot:
     def __init__(self, params=default_params):
         self.params = copy.deepcopy(params)
 
-    def init_algo(self, lp=None):
+    def init_algo(self, lp):
         return []
 
     def run_algo(self, lp, input_data):
@@ -44,9 +44,7 @@ class AbstractAlgoBot:
 
 
 class NullAlgoBot(AbstractAlgoBot):
-    def __init__(self, params=default_params):
-        super().__init__(params)
-
+    pass
 
 class AlgoBot(AbstractAlgoBot):
     def __init__(self, params=default＿params):

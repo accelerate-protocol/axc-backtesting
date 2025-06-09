@@ -10,12 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc #type: ignore
-from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
-from axc_liquidity import LiquidityBot, LiquidityBotParams
+
 from tqdm.autonotebook import tqdm, trange
 from uniswappy import (
     ERC20,
-    AddLiquidity,
     EventSelectionModel,
     MockAddress,
     Swap,
@@ -25,6 +23,8 @@ from uniswappy import (
     UniV3Helper,
     UniV3Utils,
 )  # type: ignore
+from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
+from axc_liquidity import LiquidityBot, LiquidityBotParams
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -134,24 +134,7 @@ def do_calc2(tenv, params, names):
     return pd.DataFrame(results)
 
 
-def make_arrays(lists):
-    return np.array(
-        [
-            np.pad(
-                lst,
-                (0, max(0, max_len - len(lst))),
-                "constant",
-                constant_values=(np.nan,),
-            )
-            for lst in lists
-        ],
-        dtype=float,
-    )
-
-
 def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
-    # Set up bot
-    bot = bot_class.factory()
     bot_address = MockAddress().apply(1)
     bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
     lp_params = [] if lp_params is None else lp_params
@@ -205,7 +188,7 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
     samples = []
-    for i in trange(tenv.samples):
+    for _ in trange(tenv.samples):
         lp, tkn0, tkn1 = setup_lp(tenv)
         sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
         samples.append(sample)
@@ -368,7 +351,7 @@ def plot_samples(lp_price_samples, ylow=None, yhigh=None):
 
 def runme(widgets):
     tenv = token_scenario_baseline
-    tenv.token_prob = widgets["token_prob"].value
+    tenv.tkn_prob = widgets["tkn_prob"].value
     tenv.swap_size = widgets["swap_size"].value
     widgets["output"].clear_output()
     with widgets["output"]:
