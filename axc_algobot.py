@@ -46,6 +46,7 @@ class AbstractAlgoBot:
 class NullAlgoBot(AbstractAlgoBot):
     pass
 
+
 class AlgoBot(AbstractAlgoBot):
     def __init__(self, params=default＿params):
         super().__init__(params)

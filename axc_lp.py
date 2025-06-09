@@ -9,7 +9,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pymc #type: ignore
+import pymc  # type: ignore
 
 
 from uniswappy import (
@@ -26,12 +26,14 @@ from uniswappy import (
 from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
 from axc_liquidity import LiquidityBot, LiquidityBotParams
 from tqdm.autonotebook import tqdm, trange
+
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
 
 FEE = UniV3Utils.FeeAmount.MEDIUM
 TICK_SPACING = UniV3Utils.TICK_SPACINGS[FEE]
 INIT_PRICE = UniV3Utils.encodePriceSqrt(1000, 1000)
+
 
 @dataclass
 class TokenScenario:
@@ -61,7 +63,6 @@ class SampleResults:
     liquidity: np.ndarray
     reserve0: np.ndarray
     reserve1: np.ndarray
-
 
 
 token_scenario_baseline = TokenScenario()
@@ -153,26 +154,24 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         for bot_class in bot_class_list
     ]
     # Set up liquidity pool
-    lp_prices = [ 0.0 ] * nsteps
-    lp_liquidity = [ 0.0 ] * nsteps
+    lp_prices = [0.0] * nsteps
+    lp_liquidity = [0.0] * nsteps
 
     swap_size = tenv.swap_size
     deltas = TokenDeltaModel(swap_size)
     accounts = MockAddress().apply(50)
-    rnd_accounts = [ random.choice(accounts) for _ in range(nsteps) ]
-    rnd_swap = [ deltas.delta() for _ in range(nsteps) ]
-    rnd_tkn = [ tkn0 if EventSelectionModel().bi_select(tenv.tkn_prob)  == 0 else tkn1 \
-                for _ in range(nsteps) ]
+    rnd_accounts = [random.choice(accounts) for _ in range(nsteps)]
+    rnd_swap = [deltas.delta() for _ in range(nsteps)]
+    rnd_tkn = [
+        tkn0 if EventSelectionModel().bi_select(tenv.tkn_prob) == 0 else tkn1
+        for _ in range(nsteps)
+    ]
     # Run simulation
     for adapter in adapters:
         adapter.init_step()
-    for step, tkn, account, swap in zip(
-        range(nsteps), rnd_tkn, rnd_accounts, rnd_swap
-    ):
+    for step, tkn, account, swap in zip(range(nsteps), rnd_tkn, rnd_accounts, rnd_swap):
         try:
-            Swap().apply(
-                lp, tkn, account, swap
-            )
+            Swap().apply(lp, tkn, account, swap)
         #            lp.summary()
         #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
         except AssertionError:
