@@ -9,7 +9,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pymc
+import pymc #type: ignore
 from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
 from axc_liquidity import LiquidityBot, LiquidityBotParams
 from tqdm.autonotebook import tqdm, trange
@@ -57,10 +57,10 @@ class TokenScenario:
 
 @dataclass
 class SampleResults:
-    price: np.array
-    liquidity: np.array
-    reserve0: np.array
-    reserve1: np.array
+    price: np.ndarray
+    liquidity: np.ndarray
+    reserve0: np.ndarray
+    reserve1: np.ndarray
 
 
 
