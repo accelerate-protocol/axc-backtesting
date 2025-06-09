@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pymc #type: ignore
 
-from tqdm.autonotebook import tqdm, trange
+
 from uniswappy import (
     ERC20,
     EventSelectionModel,
@@ -25,7 +25,7 @@ from uniswappy import (
 )  # type: ignore
 from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
 from axc_liquidity import LiquidityBot, LiquidityBotParams
-
+from tqdm.autonotebook import tqdm, trange
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
 
@@ -153,32 +153,33 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         for bot_class in bot_class_list
     ]
     # Set up liquidity pool
-    lp_prices = []
-    lp_liquidity = []
+    lp_prices = [ 0.0 ] * nsteps
+    lp_liquidity = [ 0.0 ] * nsteps
 
     swap_size = tenv.swap_size
     deltas = TokenDeltaModel(swap_size)
-    rnd_swap_amounts = [deltas.delta() for _ in range(nsteps)]
+    accounts = MockAddress().apply(50)
+    rnd_accounts = [ random.choice(accounts) for _ in range(nsteps) ]
+    rnd_swap = [ deltas.delta() for _ in range(nsteps) ]
+    rnd_tkn = [ tkn0 if EventSelectionModel().bi_select(tenv.tkn_prob)  == 0 else tkn1 \
+                for _ in range(nsteps) ]
     # Run simulation
     for adapter in adapters:
         adapter.init_step()
-    for step in range(nsteps):
-        accounts = MockAddress().apply(50)
-        select_tkn = EventSelectionModel().bi_select(tenv.tkn_prob)
-        #        rnd_add_amt = TokenDeltaModel(tenv.swap_size).delta()
-        #        user_add = random.choice(accounts)
-        user_swap = random.choice(accounts)
+    for step, tkn, account, swap in zip(
+        range(nsteps), rnd_tkn, rnd_accounts, rnd_swap
+    ):
         try:
             Swap().apply(
-                lp, tkn0 if select_tkn == 0 else tkn1, user_swap, rnd_swap_amounts[step]
+                lp, tkn, account, swap
             )
         #            lp.summary()
         #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
         except AssertionError:
             #            print(traceback.format_exc())
             pass
-        lp_prices.append(lp.get_price(tkn0))
-        lp_liquidity.append(lp.get_liquidity())
+        lp_prices[step] = lp.get_price(tkn0)
+        lp_liquidity[step] = lp.get_liquidity()
         for adapter in adapters:
             adapter.run_step()
     return np.array(
