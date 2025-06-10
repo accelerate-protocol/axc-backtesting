@@ -139,20 +139,19 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
     bot_address = MockAddress().apply(1)
     bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
     lp_params = [] if lp_params is None else lp_params
-
-    adapters = [
-        BotSimulator(
+    adapter = BotSimulator(
             lp,
             bot_address[0],
             tkn0,
             tkn1,
             [
-                LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params)),
-                bot_class.factory(),
-            ],
+                LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params))
+            ] + [
+                bot_class.factory() if not isinstance(bot_class, Iterable) else bot_class[0].factory(bot_class[1]) \
+                for bot_class in bot_class_list                
+            ]
         )
-        for bot_class in bot_class_list
-    ]
+
     # Set up liquidity pool
     lp_prices = [0.0] * nsteps
     lp_liquidity = [0.0] * nsteps
@@ -167,8 +166,8 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         for _ in range(nsteps)
     ]
     # Run simulation
-    for adapter in adapters:
-        adapter.init_step()
+
+    adapter.init_step()
     for step, tkn, account, swap in zip(range(nsteps), rnd_tkn, rnd_accounts, rnd_swap):
         try:
             Swap().apply(lp, tkn, account, swap)
@@ -179,8 +178,7 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
             pass
         lp_prices[step] = lp.get_price(tkn0)
         lp_liquidity[step] = lp.get_liquidity()
-        for adapter in adapters:
-            adapter.run_step()
+        adapter.run_step()
     return np.array(
         [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]]
     )

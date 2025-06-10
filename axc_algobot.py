@@ -16,12 +16,12 @@ def get_tick(lp, x):
 
 
 @dataclass
-class AlgoBotParams:
+class AbstractAlgoBotParams:
     reserve_tkn0: int = 0
     reserve_tkn1: int = 0
 
 
-default_params = AlgoBotParams()
+default_params = AbstractAlgoBotParams()
 
 
 class AbstractAlgoBot:
@@ -47,8 +47,23 @@ class NullAlgoBot(AbstractAlgoBot):
     pass
 
 
+@dataclass
+class AlgoBotParams(AbstractAlgoBotParams):
+    price_down: float = 0.95
+    price_down_reset: float = 0.98
+    price_down_frac: float = 1.0
+    price_up: float = 1.05
+    price_up_reset: float = 1.02
+    price_up_frac: float = 1.0
+    price_redeem: float = 0.95
+    price_redeem_threshold: float = -5000
+
+
+default_params_algobot = AlgoBotParams()
+
+
 class AlgoBot(AbstractAlgoBot):
-    def __init__(self, params=default＿params):
+    def __init__(self, params=default＿params_algobot):
         super().__init__(params)
         self.reserve_wait = False
         self.wait = 0
@@ -61,19 +76,23 @@ class AlgoBot(AbstractAlgoBot):
         nav = input_data["nav"] if lp else None
         if input_data["price"] is not None and nav is not None:
             price = input_data["price"]
-            if price < nav - 0.05:
-                (x, y) = SolveDeltas(lp).calc(0.98)
-                cmds.append({"swap1to0": y})
-            elif price > nav + 0.05:
-                (x, y) = SolveDeltas(lp).calc(1.02)
-                cmds.append({"swap0to1": x})
+            if price < nav * self.params.price_down:
+                (x, y) = SolveDeltas(lp).calc(nav * self.params.price_down_reset)
+                cmds.append({"swap1to0": y * self.params.price_down_frac})
+            elif price > nav * self.params.price_up:
+                (x, y) = SolveDeltas(lp).calc(nav * self.params.price_up_reset)
+                cmds.append({"swap0to1": x * self.params.price_up_frac})
             if (
-                price >= nav - 0.05
-                and self.params.reserve_tkn1 <= -5000
+                price >= nav * self.params.price_redeem
+                and self.params.reserve_tkn1 <= self.params.price_redeem_threshold
                 and not self.reserve_wait
             ):
                 cmds.append({"redeem": 5000})
         return cmds
+
+    @classmethod
+    def factory(cls, params=default_params_algobot):
+        return cls(params)
 
 
 class BotSimulator:
@@ -169,4 +188,4 @@ class BotSimulator:
         self.log["reserve1"].append(reserve1)
 
 
-__all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot"]
+__all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot", "AlgoBotParams"]
