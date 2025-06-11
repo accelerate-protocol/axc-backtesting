@@ -5,6 +5,7 @@ import random
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing import Any
+import multiprocessing
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -186,13 +187,23 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]]
     )
 
+PROCESSES = 4
+
+def run_sim(tenv, lp_params, bot_class, seed):
+        lp, tkn0, tkn1 = setup_lp(tenv)
+        random.seed(seed)
+        return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
-    samples = []
-    for _ in trange(tenv.samples):
-        lp, tkn0, tkn1 = setup_lp(tenv)
-        sample = do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
-        samples.append(sample)
+    with multiprocessing.Pool(PROCESSES) as pool, tqdm(total=tenv.samples) as pbar:
+        def ret(s):
+            x = s.get()
+            pbar.update()
+            pbar.refresh()
+            return x
+        params = [(tenv, lp_params, bot_class, "seed%d" % i, ) for i in range(tenv.samples)]
+        r = [ pool.apply_async(run_sim, p) for p in params ]
+        samples = [ ret(s) for s in r ]
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
         price=samples_array[0],
