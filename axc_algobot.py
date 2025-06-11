@@ -57,6 +57,8 @@ class AlgoBotParams(AbstractAlgoBotParams):
     price_up_frac: float = 1.0
     price_redeem: float = 0.95
     price_redeem_threshold: float = -5000
+    max_reserve0: int = 50000
+    max_reserve1: int = 50000
 
 
 default_params_algobot = AlgoBotParams()
@@ -78,9 +80,25 @@ class AlgoBot(AbstractAlgoBot):
             price = input_data["price"]
             if price < nav * self.params.price_down:
                 (x, y) = SolveDeltas(lp).calc(nav * self.params.price_down_reset)
+                if self.params.max_reserve1 is not None:
+                    if self.params.reserve_tkn1 <= -self.params.max_reserve1:
+                        y = 0
+                    elif self.params.reserve_tkn1 <= 0:
+                        ynew = abs(self.params.reserve_tkn1) + y
+                        y = ynew * self.params.max_reserve1 / (
+                            self.params.max_reserve1 + ynew
+                        ) - abs(self.params.reserve_tkn1)
                 cmds.append({"swap1to0": y * self.params.price_down_frac})
             elif price > nav * self.params.price_up:
                 (x, y) = SolveDeltas(lp).calc(nav * self.params.price_up_reset)
+                if self.params.max_reserve0 is not None:
+                    if self.params.reserve_tkn0 <= -self.params.max_reserve0:
+                        x = 0
+                    elif self.params.reserve_tkn0 <= 0:
+                        xnew = abs(self.params.reserve_tkn0) + x
+                        x = xnew * self.params.max_reserve0 / (
+                            self.params.max_reserve0 + xnew
+                        ) - abs(self.params.reserve_tkn0)
                 cmds.append({"swap0to1": x * self.params.price_up_frac})
             if (
                 price >= nav * self.params.price_redeem

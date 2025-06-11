@@ -140,17 +140,20 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
     bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
     lp_params = [] if lp_params is None else lp_params
     adapter = BotSimulator(
-            lp,
-            bot_address[0],
-            tkn0,
-            tkn1,
-            [
-                LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params))
-            ] + [
-                bot_class.factory() if not isinstance(bot_class, Iterable) else bot_class[0].factory(bot_class[1]) \
-                for bot_class in bot_class_list                
-            ]
-        )
+        lp,
+        bot_address[0],
+        tkn0,
+        tkn1,
+        [LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params))]
+        + [
+            (
+                bot_class.factory()
+                if not isinstance(bot_class, Iterable)
+                else bot_class[0].factory(bot_class[1])
+            )
+            for bot_class in bot_class_list
+        ],
+    )
 
     # Set up liquidity pool
     lp_prices = [0.0] * nsteps
@@ -334,7 +337,6 @@ def run_paths(tenv, params=None, bots=None):
 
     samples = []
     for param, bot in tqdm(zip(params, bots), total=len(params)):
-        random.seed(tenv.seed)
         sample = do_paths(tenv, param, bot)
         samples.append(sample)
     return samples
