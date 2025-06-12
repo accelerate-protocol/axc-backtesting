@@ -48,6 +48,7 @@ class ObjectiveFunction:
                         ]
                     ]
                 ],
+                display=False
             )
 
             print(np.quantile(samples[0].price, 0.1, axis=0)[-10:-1].mean())

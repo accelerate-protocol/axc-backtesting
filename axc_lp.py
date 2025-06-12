@@ -194,14 +194,17 @@ def run_sim(tenv, lp_params, bot_class, seed):
         random.seed(seed)
         return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
 
-def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
-    with multiprocessing.Pool(tenv.processes) as pool, tqdm(total=tenv.samples) as pbar:
+def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
+    if display:
+        pbar = tqdm(total=tenv.samples)
+    with multiprocessing.Pool(tenv.processes) as pool:
         def ret(s):
             x = s.get()
-            pbar.update()
-            pbar.refresh()
+            if display:
+                pbar.update()
+                pbar.refresh()
             return x
-        params = [(tenv, lp_params, bot_class, "seed%d" % i, ) for i in range(tenv.samples)]
+        params = [(tenv, lp_params, bot_class, str(seed)+"seed%d" % i, ) for i in range(tenv.samples)]
         r = [ pool.apply_async(run_sim, p) for p in params ]
         samples = [ ret(s) for s in r ]
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
@@ -328,7 +331,7 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
     plt.tight_layout()
 
 
-def run_paths(tenv, params=None, bots=None):
+def run_paths(tenv, params=None, bots=None, display=True):
     if params is None:
         params = [
             [[tenv.user_lp, "min_tick", "max_tick"]],
@@ -347,8 +350,8 @@ def run_paths(tenv, params=None, bots=None):
         bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
     samples = []
-    for param, bot in tqdm(zip(params, bots), total=len(params)):
-        sample = do_paths(tenv, param, bot)
+    for param, bot in tqdm(zip(params, bots), total=len(params)) if display else zip(params, bots):
+        sample = do_paths(tenv, param, bot, display=display)
         samples.append(sample)
     return samples
 
