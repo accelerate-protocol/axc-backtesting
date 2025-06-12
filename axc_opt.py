@@ -40,9 +40,9 @@ class ObjectiveFunction:
                         [
                             AlgoBot,
                             AlgoBotParams(
-                                price_down=0.98 - x[1],
+                                price_down_gap=x[1],
                                 price_down_reset=0.98,
-                                price_up=1.02 + x[2],
+                                price_up_gap=x[2],
                                 price_up_reset=1.02,
                             ),
                         ]

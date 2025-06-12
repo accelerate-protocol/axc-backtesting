@@ -49,10 +49,10 @@ class NullAlgoBot(AbstractAlgoBot):
 
 @dataclass
 class AlgoBotParams(AbstractAlgoBotParams):
-    price_down: float = 0.95
+    price_down_gap: float = 0.03
     price_down_reset: float = 0.98
     price_down_frac: float = 1.0
-    price_up: float = 1.05
+    price_up_gap: float = 0.03
     price_up_reset: float = 1.02
     price_up_frac: float = 1.0
     price_redeem: float = 0.95
@@ -76,9 +76,11 @@ class AlgoBot(AbstractAlgoBot):
             return {}
 
         nav = input_data["nav"] if lp else None
+        price_down = self.params.price_down_reset - self.params.price_down_gap
+        price_up = self.params.price_up_reset + self.params.price_up_gap
         if input_data["price"] is not None and nav is not None:
             price = input_data["price"]
-            if price < nav * self.params.price_down:
+            if price < price_down * nav:
                 (x, y) = SolveDeltas(lp).calc(nav * self.params.price_down_reset)
                 if self.params.max_reserve1 is not None:
                     if self.params.reserve_tkn1 <= -self.params.max_reserve1:
@@ -89,7 +91,7 @@ class AlgoBot(AbstractAlgoBot):
                             self.params.max_reserve1 + ynew
                         ) - abs(self.params.reserve_tkn1)
                 cmds.append({"swap1to0": y * self.params.price_down_frac})
-            elif price > nav * self.params.price_up:
+            elif price > nav * price_up:
                 (x, y) = SolveDeltas(lp).calc(nav * self.params.price_up_reset)
                 if self.params.max_reserve0 is not None:
                     if self.params.reserve_tkn0 <= -self.params.max_reserve0:
