@@ -83,7 +83,7 @@ class AlgoBot(AbstractAlgoBot):
                 if self.params.max_reserve1 is not None:
                     if self.params.reserve_tkn1 <= -self.params.max_reserve1:
                         y = 0
-                    elif self.params.reserve_tkn1 <= 0:
+                    elif self.params.reserve_tkn1 - y <= 0:
                         ynew = abs(self.params.reserve_tkn1) + y
                         y = ynew * self.params.max_reserve1 / (
                             self.params.max_reserve1 + ynew
@@ -94,7 +94,7 @@ class AlgoBot(AbstractAlgoBot):
                 if self.params.max_reserve0 is not None:
                     if self.params.reserve_tkn0 <= -self.params.max_reserve0:
                         x = 0
-                    elif self.params.reserve_tkn0 <= 0:
+                    elif self.params.reserve_tkn0 - x <= 0:
                         xnew = abs(self.params.reserve_tkn0) + x
                         x = xnew * self.params.max_reserve0 / (
                             self.params.max_reserve0 + xnew

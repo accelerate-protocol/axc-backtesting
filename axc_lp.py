@@ -40,7 +40,7 @@ INIT_PRICE = UniV3Utils.encodePriceSqrt(1000, 1000)
 class TokenScenario:
     user: str = "user"
     usdt_in: int = 10**6
-    user_lp: int = 10000
+    user_lp: int = 100000
     reserve: int = 50000
     name0: str = "TKN"
     name1: str = "USDT"
@@ -56,6 +56,7 @@ class TokenScenario:
     swap_size: int = 1000
     samples: int = 50
     steps: int = 500
+    processes: int = 8
 
 
 @dataclass
@@ -187,7 +188,6 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]]
     )
 
-PROCESSES = 4
 
 def run_sim(tenv, lp_params, bot_class, seed):
         lp, tkn0, tkn1 = setup_lp(tenv)
@@ -195,7 +195,7 @@ def run_sim(tenv, lp_params, bot_class, seed):
         return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot):
-    with multiprocessing.Pool(PROCESSES) as pool, tqdm(total=tenv.samples) as pbar:
+    with multiprocessing.Pool(tenv.processes) as pool, tqdm(total=tenv.samples) as pbar:
         def ret(s):
             x = s.get()
             pbar.update()
