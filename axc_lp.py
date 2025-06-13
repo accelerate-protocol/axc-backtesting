@@ -24,9 +24,10 @@ from uniswappy import (
     UniV3Helper,
     UniV3Utils,
 )  # type: ignore
+from tqdm.autonotebook import tqdm
 from axc_algobot import AlgoBot, BotSimulator, NullAlgoBot
 from axc_liquidity import LiquidityBot, LiquidityBotParams
-from tqdm.autonotebook import tqdm, trange
+
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -54,7 +55,7 @@ class TokenScenario:
     seed: int = 42
     tkn_prob: float = 0.5
     swap_size: int = 1000
-    samples: int = 50
+    samples: int = 500
     steps: int = 500
     processes: int = 8
 
@@ -190,23 +191,29 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
 
 
 def run_sim(tenv, lp_params, bot_class, seed):
-        lp, tkn0, tkn1 = setup_lp(tenv)
-        random.seed(seed)
-        return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
+    lp, tkn0, tkn1 = setup_lp(tenv)
+    random.seed(seed)
+    return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
+
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
     if display:
         pbar = tqdm(total=tenv.samples)
     with multiprocessing.Pool(tenv.processes) as pool:
+
         def ret(s):
             x = s.get()
             if display:
                 pbar.update()
                 pbar.refresh()
             return x
-        params = [(tenv, lp_params, bot_class, str(seed)+"seed%d" % i, ) for i in range(tenv.samples)]
-        r = [ pool.apply_async(run_sim, p) for p in params ]
-        samples = [ ret(s) for s in r ]
+
+        params = [
+            (tenv, lp_params, bot_class, hash(f"{seed}seed{i}"))
+            for i in range(tenv.samples)
+        ]
+        r = [pool.apply_async(run_sim, p) for p in params]
+        samples = [ret(s) for s in r]
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
         price=samples_array[0],
@@ -350,7 +357,9 @@ def run_paths(tenv, params=None, bots=None, display=True):
         bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
 
     samples = []
-    for param, bot in tqdm(zip(params, bots), total=len(params)) if display else zip(params, bots):
+    for param, bot in (
+        tqdm(zip(params, bots), total=len(params)) if display else zip(params, bots)
+    ):
         sample = do_paths(tenv, param, bot, display=display)
         samples.append(sample)
     return samples
