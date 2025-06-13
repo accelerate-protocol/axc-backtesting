@@ -59,6 +59,7 @@ class AlgoBotParams(AbstractAlgoBotParams):
     price_redeem_threshold: float = -5000
     max_reserve0: int = 50000
     max_reserve1: int = 50000
+    redeem_amount: int = 0
 
 
 default_params_algobot = AlgoBotParams()
@@ -106,8 +107,9 @@ class AlgoBot(AbstractAlgoBot):
                 price >= nav * self.params.price_redeem
                 and self.params.reserve_tkn1 <= self.params.price_redeem_threshold
                 and not self.reserve_wait
+                and self.params.redeem_amount > 0
             ):
-                cmds.append({"redeem": 5000})
+                cmds.append({"redeem": self.params.redeem_amount})
         return cmds
 
     @classmethod

@@ -16,6 +16,7 @@ class ObjectiveFunction:
     """
     ObjectiveFunction
     """
+
     def __init__(self, token_env=token_scenario_baseline):
         self.nround = 0
         self.token_env = copy.deepcopy(token_env)
@@ -24,6 +25,7 @@ class ObjectiveFunction:
         """
         return objective function
         """
+
         def objfunc(x, seed=None):
             print(x)
             #    if (x[0], x[1], x[2], x[3]) in memo:
@@ -56,7 +58,7 @@ class ObjectiveFunction:
                         ]
                     ]
                 ],
-                display=False
+                display=False,
             )
 
             print(np.quantile(samples[0].price, 0.1, axis=0)[-10:-1].mean())

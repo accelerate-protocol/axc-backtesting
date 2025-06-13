@@ -199,9 +199,7 @@ def run_sim(tenv, lp_params, bot_class, seed):
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
     r = [
-        dask.delayed(run_sim)(
-            tenv, lp_params, bot_class, hash(f"{seed}seed{i}")
-        )
+        dask.delayed(run_sim)(tenv, lp_params, bot_class, hash(f"{seed}seed{i}"))
         for i in range(tenv.samples)
     ]
     with dask.config.set(pool=ProcessPoolExecutor(tenv.processes)):
