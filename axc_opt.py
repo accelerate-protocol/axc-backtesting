@@ -6,14 +6,16 @@ ObjectiveFunction for optmizers
 """
 
 import random
+import copy
 import numpy as np
 from axc_lp import run_paths, plot_samples, token_scenario_baseline
 from axc_algobot import AlgoBot, AlgoBotParams
 
 
 class ObjectiveFunction:
-    def __init__(self):
+    def __init__(self, token_env):
         self.nround = 0
+        self.token_env = copy.deepcopy(token_env)
 
     def get_function(self):
         def objfunc(x, seed=None):
@@ -26,7 +28,7 @@ class ObjectiveFunction:
             tenv.samples = 400
             tenv.steps = 500
             tenv.swap_size = 1000
-            tenv.processes = 6
+
             samples = run_paths(
                 tenv,
                 [

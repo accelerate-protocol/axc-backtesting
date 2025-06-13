@@ -40,7 +40,7 @@ INIT_PRICE = UniV3Utils.encodePriceSqrt(1000, 1000)
 class TokenScenario:
     user: str = "user"
     usdt_in: int = 10**6
-    user_lp: int = 100000
+    user_lp: int = 10000
     reserve: int = 50000
     name0: str = "TKN"
     name1: str = "USDT"
