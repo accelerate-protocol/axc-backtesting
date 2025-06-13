@@ -13,11 +13,17 @@ from axc_algobot import AlgoBot, AlgoBotParams
 
 
 class ObjectiveFunction:
-    def __init__(self, token_env):
+    """
+    ObjectiveFunction
+    """
+    def __init__(self, token_env=token_scenario_baseline):
         self.nround = 0
         self.token_env = copy.deepcopy(token_env)
 
     def get_function(self):
+        """
+        return objective function
+        """
         def objfunc(x, seed=None):
             print(x)
             #    if (x[0], x[1], x[2], x[3]) in memo:
