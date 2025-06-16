@@ -56,10 +56,12 @@ class AlgoBotParams(AbstractAlgoBotParams):
     price_up_reset: float = 1.02
     price_up_frac: float = 1.0
     price_redeem: float = 0.95
-    price_redeem_threshold: float = -5000
+    redeem_threshold0: float = 0.2
+    redeem_threshold1: float = 0.2
+    redeem_amount1: float = 0.2
     max_reserve0: int = 50000
     max_reserve1: int = 50000
-    redeem_amount: int = 0
+    redeem_amount0to1: int = 0
 
 
 default_params_algobot = AlgoBotParams()
@@ -105,11 +107,12 @@ class AlgoBot(AbstractAlgoBot):
                 cmds.append({"swap0to1": x * self.params.price_up_frac})
             if (
                 price >= nav * self.params.price_redeem
-                and self.params.reserve_tkn1 <= self.params.price_redeem_threshold
+                and self.params.max_reserve1 is not None
+                and self.params.reserve_tkn0 >= self.params.redeem_amount0to1
                 and not self.reserve_wait
-                and self.params.redeem_amount > 0
+                and self.params.redeem_amount0to1 > 0
             ):
-                cmds.append({"redeem": self.params.redeem_amount})
+                cmds.append({"redeem0to1": self.params.redeem_amount0to1})
         return cmds
 
     @classmethod
@@ -129,7 +132,8 @@ class BotSimulator:
         self.delay = 50
         self.redeem_queue = {}
         self.nav = 1.0
-        self.log = {"cmds": {}, "redemption": {}, "reserve0": [], "reserve1": []}
+        self.log = {"cmds": {}, "pending_redemption0": [], "reserve0": [], "reserve1": [], "nav":[], "nav_net":[]}
+        self.pending_redemption0 = 0
 
     def import_state(self):
         return {
@@ -177,14 +181,15 @@ class BotSimulator:
                         )
                     except AssertionError:
                         pass
-                if k == "redeem":
+                if k == "redeem0to1":
                     self.redeem_queue[self.nsteps] = v
                     bot.change_reserves(-v, 0)
+                    self.pending_redemption0 += v
             new_redeem_queue = {}
             for k, v in self.redeem_queue.items():
                 if self.nsteps >= k + self.delay:
                     bot.change_reserves(0, v * self.nav)
-                    self.log["redemption"][self.nsteps] = v
+                    self.pending_redemption0 -= v
                 else:
                     new_redeem_queue[k] = v
             self.redeem_queue = new_redeem_queue
@@ -208,6 +213,9 @@ class BotSimulator:
             reserve1 += bot.params.reserve_tkn1
         self.log["reserve0"].append(reserve0)
         self.log["reserve1"].append(reserve1)
+        self.log["pending_redemption0"].append(self.pending_redemption0)
+        self.log["nav"].append(self.nav)
+        self.log["nav_net"].append(reserve0 * self.nav + reserve1) 
 
 
 __all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot", "AlgoBotParams"]

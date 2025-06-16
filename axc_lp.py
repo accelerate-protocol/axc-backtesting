@@ -67,6 +67,8 @@ class SampleResults:
     liquidity: np.ndarray
     reserve0: np.ndarray
     reserve1: np.ndarray
+    pending_redemption0: np.ndarray
+    nav_net: np.ndarray
 
 
 token_scenario_baseline = TokenScenario()
@@ -187,7 +189,8 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         lp_liquidity[step] = lp.get_liquidity()
         adapter.run_step()
     return np.array(
-        [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"]]
+        [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"],
+        adapter.log["pending_redemption0"], adapter.log["nav_net"]]
     )
 
 
@@ -215,6 +218,8 @@ def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
         liquidity=samples_array[1],
         reserve0=samples_array[2],
         reserve1=samples_array[3],
+        pending_redemption0=samples_array[4],
+        nav_net=samples_array[5]
     )
 
 
@@ -246,7 +251,8 @@ def plot_path(lp_prices, lp_liquidity):
     plt.tight_layout()
 
 
-def plot_distribution(samples, title="Price (TKN)", ylow=None, yhigh=None):
+def plot_distribution(samples, title="Price (TKN)", ylow=None, yhigh=None,
+                     ylabel="Price (TKN/USDT)"):
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
 
@@ -257,7 +263,7 @@ def plot_distribution(samples, title="Price (TKN)", ylow=None, yhigh=None):
     p_ax.set_title(title)
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
-    p_ax.set_ylabel("Price (TKN/USDT)")
+    p_ax.set_ylabel(ylabel)
     p_ax.set_ylim(bottom=ylow, top=yhigh)
     plt.show()
 
