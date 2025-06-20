@@ -46,17 +46,14 @@ class ObjectiveFunction:
                     ]
                 ],
                 [
-                    [
-                        [
-                            AlgoBot,
-                            AlgoBotParams(
-                                price_down_gap=x[1],
-                                price_down_reset=0.98,
-                                price_up_gap=x[2],
-                                price_up_reset=1.02,
-                            ),
-                        ]
-                    ]
+                    AlgoBot(
+                        AlgoBotParams(
+                            price_down_gap=x[1],
+                            price_down_reset=0.98,
+                            price_up_gap=x[2],
+                            price_up_reset=1.02,
+                        )
+                    )
                 ],
                 display=False,
             )

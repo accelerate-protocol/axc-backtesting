@@ -141,24 +141,16 @@ def do_calc2(tenv, params, names):
     return pd.DataFrame(results)
 
 
-def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
+def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_list, lp_params=None):
     bot_address = MockAddress().apply(1)
-    bot_class_list = [bot_class] if not isinstance(bot_class, Iterable) else bot_class
+    bot_list = [bot_list] if not isinstance(bot_list, Iterable) else bot_list
     lp_params = [] if lp_params is None else lp_params
     adapter = BotSimulator(
         lp,
         bot_address[0],
         tkn0,
         tkn1,
-        [LiquidityBot.factory(LiquidityBotParams(pool_params=lp_params))]
-        + [
-            (
-                bot_class.factory()
-                if not isinstance(bot_class, Iterable)
-                else bot_class[0].factory(bot_class[1])
-            )
-            for bot_class in bot_class_list
-        ],
+        [LiquidityBot(LiquidityBotParams(pool_params=lp_params))] + bot_list,
     )
 
     # Set up liquidity pool
@@ -189,15 +181,21 @@ def do_sim(tenv, lp, tkn0, tkn1, nsteps, bot_class=NullAlgoBot, lp_params=None):
         lp_liquidity[step] = lp.get_liquidity()
         adapter.run_step()
     return np.array(
-        [lp_prices, lp_liquidity, adapter.log["reserve0"], adapter.log["reserve1"],
-        adapter.log["pending_redemption0"], adapter.log["nav_net"]]
+        [
+            lp_prices,
+            lp_liquidity,
+            adapter.log["reserve0"],
+            adapter.log["reserve1"],
+            adapter.log["pending_redemption0"],
+            adapter.log["nav_net"],
+        ]
     )
 
 
-def run_sim(tenv, lp_params, bot_class, seed):
+def run_sim(tenv, lp_params, bot_list, seed):
     lp, tkn0, tkn1 = setup_lp(tenv)
     random.seed(seed)
-    return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_class, lp_params)
+    return do_sim(tenv, lp, tkn0, tkn1, tenv.steps, bot_list, lp_params)
 
 
 def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
@@ -219,7 +217,7 @@ def do_paths(tenv, lp_params, bot_class=NullAlgoBot, seed="", display=True):
         reserve0=samples_array[2],
         reserve1=samples_array[3],
         pending_redemption0=samples_array[4],
-        nav_net=samples_array[5]
+        nav_net=samples_array[5],
     )
 
 
@@ -251,8 +249,9 @@ def plot_path(lp_prices, lp_liquidity):
     plt.tight_layout()
 
 
-def plot_distribution(samples, title="Price (TKN)", ylow=None, yhigh=None,
-                     ylabel="Price (TKN/USDT)"):
+def plot_distribution(
+    samples, title="Price (TKN)", ylow=None, yhigh=None, ylabel="Price (TKN/USDT)"
+):
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
 
@@ -355,7 +354,7 @@ def run_paths(tenv, params=None, bots=None, display=True):
         ]
 
     if bots is None:
-        bots = [NullAlgoBot, NullAlgoBot, AlgoBot, AlgoBot]
+        bots = [NullAlgoBot(), NullAlgoBot(), AlgoBot(), AlgoBot()]
 
     samples = []
     for param, bot in (
@@ -387,7 +386,7 @@ def runme(widgets):
                     [tenv.reserve, tenv.reserve_lower, tenv.nav],
                 ]
             ],
-            [AlgoBot],
+            [AlgoBot()],
         )
         plot_samples([samples[0].price])
         plot_samples([samples[0].reserve0])
