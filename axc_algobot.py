@@ -132,7 +132,14 @@ class BotSimulator:
         self.delay = 50
         self.redeem_queue = {}
         self.nav = 1.0
-        self.log = {"cmds": {}, "pending_redemption0": [], "reserve0": [], "reserve1": [], "nav":[], "nav_net":[]}
+        self.log = {
+            "cmds": {},
+            "pending_redemption0": [],
+            "reserve0": [],
+            "reserve1": [],
+            "nav": [],
+            "nav_net": [],
+        }
         self.pending_redemption0 = 0
 
     def import_state(self):
@@ -215,7 +222,7 @@ class BotSimulator:
         self.log["reserve1"].append(reserve1)
         self.log["pending_redemption0"].append(self.pending_redemption0)
         self.log["nav"].append(self.nav)
-        self.log["nav_net"].append(reserve0 * self.nav + reserve1) 
+        self.log["nav_net"].append(reserve0 * self.nav + reserve1)
 
 
 __all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot", "AlgoBotParams"]

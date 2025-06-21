@@ -10,6 +10,7 @@ import copy
 import numpy as np
 from axc_lp import run_paths, plot_samples, token_scenario_baseline
 from axc_algobot import AlgoBot, AlgoBotParams
+from axc_liquidity import LiquidityBot, LiquidityBotParams
 
 
 class ObjectiveFunction:
@@ -40,12 +41,14 @@ class ObjectiveFunction:
             samples = run_paths(
                 tenv,
                 [
-                    [
-                        [tenv.user_lp, "min_tick", "max_tick"],
-                        [10.0 ** x[0], 0.95, 0.98],
-                    ]
-                ],
-                [
+                    LiquidityBot(
+                        LiquidityBotParams(
+                            pool_params=[
+                                [tenv.user_lp, "min_tick", "max_tick"],
+                                [10.0 ** x[0], 0.95, 0.98],
+                            ]
+                        )
+                    ),
                     AlgoBot(
                         AlgoBotParams(
                             price_down_gap=x[1],
@@ -53,7 +56,7 @@ class ObjectiveFunction:
                             price_up_gap=x[2],
                             price_up_reset=1.02,
                         )
-                    )
+                    ),
                 ],
                 display=False,
             )
