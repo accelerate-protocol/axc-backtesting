@@ -6,7 +6,7 @@ axc_liquidity - Liquidity routines
 """
 
 from dataclasses import dataclass, field
-from axc_algobot import AbstractAlgoBot, AbstractAlgoBotParams
+from axc.algobot import AbstractAlgoBot, AbstractAlgoBotParams
 
 
 @dataclass

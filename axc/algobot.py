@@ -38,10 +38,6 @@ class AbstractAlgoBot:
         self.params.reserve_tkn0 += amount0
         self.params.reserve_tkn1 += amount1
 
-    @classmethod
-    def factory(cls, params=default_params):
-        return cls(params)
-
 
 class NullAlgoBot(AbstractAlgoBot):
     pass

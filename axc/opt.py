@@ -8,9 +8,9 @@ ObjectiveFunction for optmizers
 import random
 import copy
 import numpy as np
-from axc_lp import run_paths, plot_samples, token_scenario_baseline
-from axc_algobot import AlgoBot, AlgoBotParams
-from axc_liquidity import LiquidityBot, LiquidityBotParams
+from axc.lp import run_paths, plot_samples, token_scenario_baseline
+from axc.algobot import AlgoBot, AlgoBotParams
+from axc.liquidity import LiquidityBot, LiquidityBotParams
 
 
 class ObjectiveFunction:

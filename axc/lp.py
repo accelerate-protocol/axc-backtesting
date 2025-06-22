@@ -30,8 +30,8 @@ from uniswappy import (
 )  # type: ignore
 from tqdm.autonotebook import tqdm
 from tqdm.dask import TqdmCallback
-from axc_algobot import AlgoBot, BotSimulator, AbstractAlgoBot
-from axc_liquidity import LiquidityBot, LiquidityBotParams
+from axc.algobot import AlgoBot, BotSimulator, AbstractAlgoBot
+from axc.liquidity import LiquidityBot, LiquidityBotParams
 
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
@@ -220,7 +220,6 @@ def do_paths(
                 samples = dask.compute(*r)
         else:
             samples = dask.compute(*r)
-    samples_np = np.array(samples)
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
         price=samples_array[0],
