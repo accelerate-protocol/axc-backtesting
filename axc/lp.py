@@ -8,7 +8,6 @@ axc_lp - Liquidity pool routines
 import random
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
-from collections.abc import Iterable
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -19,10 +18,8 @@ import dask
 
 from uniswappy import (
     ERC20,
-    EventSelectionModel,
     MockAddress,
     Swap,
-    TokenDeltaModel,
     UniswapExchangeData,
     UniswapFactory,
     UniV3Helper,
@@ -153,7 +150,6 @@ def do_calc2(tenv: TokenScenario, params, names) -> pd.DataFrame:
 
 def do_sim(tenv: TokenScenario, lp, tkn0, tkn1, nsteps, bot_list) -> np.ndarray:
     bot_address = MockAddress().apply(1)
-    bot_list = [bot_list] if not isinstance(bot_list, Iterable) else bot_list
     adapter = BotSimulator(
         lp,
         bot_address[0],
@@ -161,44 +157,7 @@ def do_sim(tenv: TokenScenario, lp, tkn0, tkn1, nsteps, bot_list) -> np.ndarray:
         tkn1,
         bot_list,
     )
-
-    # Set up liquidity pool
-    lp_prices = [0.0] * nsteps
-    lp_liquidity = [0.0] * nsteps
-
-    swap_size = tenv.swap_size
-    deltas = TokenDeltaModel(swap_size)
-    accounts = MockAddress().apply(50)
-    rnd_accounts = [random.choice(accounts) for _ in range(nsteps)]
-    rnd_swap = [deltas.delta() for _ in range(nsteps)]
-    rnd_tkn = [
-        tkn0 if EventSelectionModel().bi_select(tenv.tkn_prob) == 0 else tkn1
-        for _ in range(nsteps)
-    ]
-    # Run simulation
-
-    adapter.init_step()
-    for step, tkn, account, swap in zip(range(nsteps), rnd_tkn, rnd_accounts, rnd_swap):
-        try:
-            Swap().apply(lp, tkn, account, swap)
-        #            lp.summary()
-        #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
-        except AssertionError:
-            #            print(traceback.format_exc())
-            pass
-        lp_prices[step] = lp.get_price(tkn0)
-        lp_liquidity[step] = lp.get_liquidity()
-        adapter.run_step()
-    return np.array(
-        [
-            lp_prices,
-            lp_liquidity,
-            adapter.log["reserve0"],
-            adapter.log["reserve1"],
-            adapter.log["pending_redemption0"],
-            adapter.log["nav_net"],
-        ]
-    )
+    return adapter.run_sim(tenv, nsteps)
 
 
 def run_sim(tenv: TokenScenario, bot_list: list[AbstractAlgoBot], seed):

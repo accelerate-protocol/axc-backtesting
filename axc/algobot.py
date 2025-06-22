@@ -4,7 +4,18 @@
 from dataclasses import dataclass
 from collections.abc import Iterable
 import copy
-from uniswappy import SolveDeltas, Swap, AddLiquidity, UniV3Helper, UniV3Utils
+import random
+import numpy as np
+from uniswappy import (
+    SolveDeltas,
+    Swap,
+    AddLiquidity,
+    UniV3Helper,
+    UniV3Utils,
+    EventSelectionModel,
+    TokenDeltaModel,
+    MockAddress,
+)
 
 
 def get_tick(lp, x):
@@ -219,6 +230,50 @@ class BotSimulator:
         self.log["pending_redemption0"].append(self.pending_redemption0)
         self.log["nav"].append(self.nav)
         self.log["nav_net"].append(reserve0 * self.nav + reserve1)
+
+    def run_sim(self, tenv, nsteps):
+        lp_prices = [0.0] * nsteps
+        lp_liquidity = [0.0] * nsteps
+
+        swap_size = tenv.swap_size
+        deltas = TokenDeltaModel(swap_size)
+        accounts = MockAddress().apply(50)
+        rnd_accounts = [random.choice(accounts) for _ in range(nsteps)]
+        rnd_swap = [deltas.delta() for _ in range(nsteps)]
+        rnd_tkn = [
+            (
+                self.tkn0
+                if EventSelectionModel().bi_select(tenv.tkn_prob) == 0
+                else self.tkn1
+            )
+            for _ in range(nsteps)
+        ]
+        # Run simulation
+
+        self.init_step()
+        for step, tkn, account, swap in zip(
+            range(nsteps), rnd_tkn, rnd_accounts, rnd_swap
+        ):
+            try:
+                Swap().apply(self.lp, tkn, account, swap)
+            #            lp.summary()
+            #            print(select_tkn, rnd_swap_amt, out, lp.get_price(tkn0))
+            except AssertionError:
+                #            print(traceback.format_exc())
+                pass
+            lp_prices[step] = self.lp.get_price(self.tkn0)
+            lp_liquidity[step] = self.lp.get_liquidity()
+            self.run_step()
+        return np.array(
+            [
+                lp_prices,
+                lp_liquidity,
+                self.log["reserve0"],
+                self.log["reserve1"],
+                self.log["pending_redemption0"],
+                self.log["nav_net"],
+            ]
+        )
 
 
 __all__ = ["AlgoBot", "BotSimulator", "NullAlgoBot", "AlgoBotParams"]

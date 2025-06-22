@@ -14,6 +14,7 @@ class LiquidityBotParams(AbstractAlgoBotParams):
     """
     liquidity params
     """
+
     pool_params: list = field(default_factory=lambda: [])
 
 
@@ -24,6 +25,7 @@ class LiquidityBot(AbstractAlgoBot):
     """
     add liquidity into bot
     """
+
     def __init__(self, params=default_params):
         super().__init__(params)
 
