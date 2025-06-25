@@ -235,6 +235,12 @@ def plot_distribution(
     p_ax.set_ylim(bottom=ylow, top=yhigh)
     plt.show()
 
+def plot_samples_hist(samples, step, n_bins=20) -> None:
+    dist = samples[:, step]
+    fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
+    p_ax.hist(dist, n_bins)
+    plt.show()
+
 
 def dump_liquidity(lp, tkn0, tkn1) -> pd.DataFrame:
     """
@@ -399,6 +405,7 @@ __all__ = [
     "plot_liquidity",
     "plot_path",
     "plot_distribution",
+    "plot_samples_hist",
     "token_scenario_baseline",
     "run_paths",
     "runme",
