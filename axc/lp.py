@@ -27,7 +27,7 @@ from uniswappy import (
 )  # type: ignore
 from tqdm.autonotebook import tqdm
 from tqdm.dask import TqdmCallback
-from axc.algobot import AlgoBot, BotSimulator, AbstractAlgoBot
+from axc.algobot import AlgoBot, AlgoBotParams, BotSimulator, AbstractAlgoBot
 from axc.liquidity import LiquidityBot, LiquidityBotParams
 
 
@@ -235,6 +235,7 @@ def plot_distribution(
     p_ax.set_ylim(bottom=ylow, top=yhigh)
     plt.show()
 
+
 def plot_samples_hist(samples, step, n_bins=20) -> None:
     dist = samples[:, step]
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
@@ -392,6 +393,8 @@ def runme(widgets):
         plot_samples([samples[0].price])
         plot_samples([samples[0].reserve0])
         plot_samples([samples[0].reserve1])
+        plot_samples([samples[0].pending_redemption0])
+        plot_samples([samples[0].nav_net])
 
 
 __all__ = [
