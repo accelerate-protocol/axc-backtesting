@@ -60,6 +60,7 @@ class TokenScenario:
     samples: int = 400
     steps: int = 500
     processes: int = 8
+    nav_rate: float = 0.0
 
 
 @dataclass
@@ -70,6 +71,7 @@ class SampleResults:
     reserve1: np.ndarray
     pending_redemption0: np.ndarray
     nav_net: np.ndarray
+    nav: np.ndarray
 
 
 token_scenario_baseline = TokenScenario()
@@ -156,6 +158,7 @@ def do_sim(tenv: TokenScenario, lp, tkn0, tkn1, nsteps, bot_list) -> np.ndarray:
         tkn0,
         tkn1,
         bot_list,
+        nav_rate = tenv.nav_rate
     )
     return adapter.run_sim(tenv, nsteps)
 
@@ -187,6 +190,7 @@ def do_paths(
         reserve1=samples_array[3],
         pending_redemption0=samples_array[4],
         nav_net=samples_array[5],
+        nav=samples_array[6]
     )
 
 

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (C) 2025 AXC Laboratories
 
+import math
 from dataclasses import dataclass
 from collections.abc import Iterable
 import copy
@@ -128,7 +129,7 @@ class AlgoBot(AbstractAlgoBot):
 
 
 class BotSimulator:
-    def __init__(self, lp, account, tkn0, tkn1, bots):
+    def __init__(self, lp, account, tkn0, tkn1, bots, nav=1.0, nav_rate=0.0):
         self.lp = lp
         self.account = account
         self.bots = bots if isinstance(bots, Iterable) else [bots]
@@ -138,7 +139,8 @@ class BotSimulator:
         self.nsteps = 0
         self.delay = 50
         self.redeem_queue = {}
-        self.nav = 1.0
+        self.nav = nav
+        self.nav_rate = nav_rate
         self.log = {
             "cmds": {},
             "pending_redemption0": [],
@@ -148,10 +150,14 @@ class BotSimulator:
             "nav_net": [],
         }
         self.pending_redemption0 = 0
+        self.last_deposit0to1 = None
+        self.last_deposit1to0 = None
 
     def import_state(self):
+        nav_factor = 1.0 if self.nav_rate == 0.0 else \
+            math.exp(self.nav_rate / 100.0 * float(self.nsteps) / 100.0)
         return {
-            "nav": self.nav,
+            "nav": self.nav * nav_factor,
             "price": self.lp.get_price(self.tkn0),
             "nsteps": self.nsteps,
         }
@@ -181,6 +187,7 @@ class BotSimulator:
                             get_tick(self.lp, v[1]),
                             get_tick(self.lp, v[2]),
                         )
+                        self.last_deposit0to1 = self.lp.get_last_liquidity_deposit()
                     except AssertionError:
                         pass
                 if k == "addliquidity1":
@@ -193,6 +200,7 @@ class BotSimulator:
                             get_tick(self.lp, v[1]),
                             get_tick(self.lp, v[2]),
                         )
+                        self.last_deposit1to0 = self.lp.get_last_liquidity_deposit()
                     except AssertionError:
                         pass
                 if k == "redeem0to1":
@@ -228,8 +236,8 @@ class BotSimulator:
         self.log["reserve0"].append(reserve0)
         self.log["reserve1"].append(reserve1)
         self.log["pending_redemption0"].append(self.pending_redemption0)
-        self.log["nav"].append(self.nav)
-        self.log["nav_net"].append(reserve0 * self.nav + reserve1)
+        self.log["nav"].append(state['nav'])
+        self.log["nav_net"].append(reserve0 * state['nav'] + reserve1)
 
     def run_sim(self, tenv, nsteps):
         lp_prices = [0.0] * nsteps
@@ -272,6 +280,7 @@ class BotSimulator:
                 self.log["reserve1"],
                 self.log["pending_redemption0"],
                 self.log["nav_net"],
+                self.log['nav']
             ]
         )
 
