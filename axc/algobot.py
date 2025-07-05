@@ -26,6 +26,7 @@ def get_tick(lp, x):
         return UniV3Utils.getMaxTick(lp.tickSpacing)
     return UniV3Helper().get_price_tick(lp, 0, x)
 
+
 class AbstractAlgoBot:
     @dataclass
     class Params:
@@ -48,8 +49,10 @@ class AbstractAlgoBot:
 
 AbstractAlgoBotParams = AbstractAlgoBot.Params
 
+
 class NullAlgoBot(AbstractAlgoBot):
     pass
+
 
 class AlgoBot(AbstractAlgoBot):
     @dataclass
@@ -115,7 +118,9 @@ class AlgoBot(AbstractAlgoBot):
                 cmds.append({"redeem0to1": self.params.redeem_amount0to1})
         return cmds
 
+
 AlgoBotParams = AlgoBot.Params
+
 
 class BotSimulator:
     def __init__(self, lp, account, tkn0, tkn1, bots, nav=1.0, nav_rate=0.0):
@@ -143,8 +148,11 @@ class BotSimulator:
         self.last_deposit1to0 = None
 
     def import_state(self):
-        nav_factor = 1.0 if self.nav_rate == 0.0 else \
-            math.exp(self.nav_rate / 100.0 * float(self.nsteps) / 100.0)
+        nav_factor = (
+            1.0
+            if self.nav_rate == 0.0
+            else math.exp(self.nav_rate / 100.0 * float(self.nsteps) / 100.0)
+        )
         return {
             "nav": self.nav * nav_factor,
             "price": self.lp.get_price(self.tkn0),
@@ -225,8 +233,8 @@ class BotSimulator:
         self.log["reserve0"].append(reserve0)
         self.log["reserve1"].append(reserve1)
         self.log["pending_redemption0"].append(self.pending_redemption0)
-        self.log["nav"].append(state['nav'])
-        self.log["nav_net"].append(reserve0 * state['nav'] + reserve1)
+        self.log["nav"].append(state["nav"])
+        self.log["nav_net"].append(reserve0 * state["nav"] + reserve1)
 
     def run_sim(self, tenv, nsteps):
         lp_prices = [0.0] * nsteps
@@ -269,7 +277,7 @@ class BotSimulator:
                 self.log["reserve1"],
                 self.log["pending_redemption0"],
                 self.log["nav_net"],
-                self.log['nav']
+                self.log["nav"],
             ]
         )
 
