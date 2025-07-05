@@ -27,9 +27,8 @@ from uniswappy import (
 )  # type: ignore
 from tqdm.autonotebook import tqdm
 from tqdm.dask import TqdmCallback
-from axc.algobot import AlgoBot, AlgoBotParams, BotSimulator, AbstractAlgoBot
-from axc.liquidity import LiquidityBot, LiquidityBotParams
-
+from axc.algobot import AlgoBot, BotSimulator, AbstractAlgoBot
+from axc.liquidity import LiquidityBot
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -132,7 +131,7 @@ def do_calc2(tenv: TokenScenario, params, names) -> pd.DataFrame:
                 tenv.user,
                 tkn0,
                 tkn1,
-                [LiquidityBot(LiquidityBotParams(pool_params=param))],
+                [LiquidityBot(LiquidityBot.Params(pool_params=param))],
             )
             adapter.init_step()
             try:
@@ -177,11 +176,9 @@ def do_paths(
         for i in range(tenv.samples)
     ]
     with dask.config.set(pool=ProcessPoolExecutor(tenv.processes)):
-        if display:
-            with TqdmCallback(desc="run paths"):
-                samples = dask.compute(*r)
-        else:
+        with TqdmCallback(desc="run paths", leave=False):
             samples = dask.compute(*r)
+
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
         price=samples_array[0],
@@ -323,14 +320,14 @@ def run_paths(tenv, bots=None, display=True):
         bots = [
             [
                 LiquidityBot(
-                    LiquidityBotParams(
+                    LiquidityBot.Params(
                         pool_params=[[tenv.user_lp, "min_tick", "max_tick"]]
                     )
                 )
             ],
             [
                 LiquidityBot(
-                    LiquidityBotParams(
+                    LiquidityBot.Params(
                         pool_params=[
                             [tenv.user_lp, "min_tick", "max_tick"],
                             [tenv.reserve, tenv.reserve_lower, tenv.nav],
@@ -340,7 +337,7 @@ def run_paths(tenv, bots=None, display=True):
             ],
             [
                 LiquidityBot(
-                    LiquidityBotParams(
+                    LiquidityBot.Params(
                         pool_params=[[tenv.user_lp, "min_tick", "max_tick"]]
                     )
                 ),
@@ -348,7 +345,7 @@ def run_paths(tenv, bots=None, display=True):
             ],
             [
                 LiquidityBot(
-                    LiquidityBotParams(
+                    LiquidityBot.Params(
                         pool_params=[
                             [tenv.user_lp, "min_tick", "max_tick"],
                             [tenv.reserve, tenv.reserve_lower, tenv.nav],
@@ -361,7 +358,7 @@ def run_paths(tenv, bots=None, display=True):
 
     return [
         do_paths(tenv, bot, display=display)
-        for bot in (tqdm(bots) if display else bots)
+        for bot in (tqdm(bots, leave=False) if display else bots)
     ]
 
 
