@@ -152,12 +152,7 @@ def do_calc2(tenv: TokenScenario, params, names) -> pd.DataFrame:
 def do_sim(tenv: TokenScenario, lp, tkn0, tkn1, nsteps, bot_list) -> np.ndarray:
     bot_address = MockAddress().apply(1)
     adapter = BotSimulator(
-        lp,
-        bot_address[0],
-        tkn0,
-        tkn1,
-        bot_list,
-        nav_rate = tenv.nav_rate
+        lp, bot_address[0], tkn0, tkn1, bot_list, nav_rate=tenv.nav_rate
     )
     return adapter.run_sim(tenv, nsteps)
 
@@ -187,7 +182,7 @@ def do_paths(
         reserve1=samples_array[3],
         pending_redemption0=samples_array[4],
         nav_net=samples_array[5],
-        nav=samples_array[6]
+        nav=samples_array[6],
     )
 
 
