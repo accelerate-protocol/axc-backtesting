@@ -26,18 +26,13 @@ def get_tick(lp, x):
         return UniV3Utils.getMaxTick(lp.tickSpacing)
     return UniV3Helper().get_price_tick(lp, 0, x)
 
-
-@dataclass
-class AbstractAlgoBotParams:
-    reserve_tkn0: int = 0
-    reserve_tkn1: int = 0
-
-
-default_params = AbstractAlgoBotParams()
-
-
 class AbstractAlgoBot:
-    def __init__(self, params=default_params):
+    @dataclass
+    class Params:
+        reserve_tkn0: int = 0
+        reserve_tkn1: int = 0
+
+    def __init__(self, params=Params()):
         self.params = copy.deepcopy(params)
 
     def init_algo(self, lp):
@@ -51,32 +46,29 @@ class AbstractAlgoBot:
         self.params.reserve_tkn1 += amount1
 
 
+AbstractAlgoBotParams = AbstractAlgoBot.Params
+
 class NullAlgoBot(AbstractAlgoBot):
     pass
 
-
-@dataclass
-class AlgoBotParams(AbstractAlgoBotParams):
-    price_down_gap: float = 0.03
-    price_down_reset: float = 0.98
-    price_down_frac: float = 1.0
-    price_up_gap: float = 0.03
-    price_up_reset: float = 1.02
-    price_up_frac: float = 1.0
-    price_redeem: float = 0.95
-    redeem_threshold0: float = 0.2
-    redeem_threshold1: float = 0.2
-    redeem_amount1: float = 0.2
-    max_reserve0: int = 50000
-    max_reserve1: int = 50000
-    redeem_amount0to1: int = 0
-
-
-default_params_algobot = AlgoBotParams()
-
-
 class AlgoBot(AbstractAlgoBot):
-    def __init__(self, params=default＿params_algobot):
+    @dataclass
+    class Params(AbstractAlgoBot.Params):
+        price_down_gap: float = 0.03
+        price_down_reset: float = 0.98
+        price_down_frac: float = 1.0
+        price_up_gap: float = 0.03
+        price_up_reset: float = 1.02
+        price_up_frac: float = 1.0
+        price_redeem: float = 0.95
+        redeem_threshold0: float = 0.2
+        redeem_threshold1: float = 0.2
+        redeem_amount1: float = 0.2
+        max_reserve0: int = 50000
+        max_reserve1: int = 50000
+        redeem_amount0to1: int = 0
+
+    def __init__(self, params=Params()):
         super().__init__(params)
         self.reserve_wait = False
         self.wait = 0
@@ -123,10 +115,7 @@ class AlgoBot(AbstractAlgoBot):
                 cmds.append({"redeem0to1": self.params.redeem_amount0to1})
         return cmds
 
-    @classmethod
-    def factory(cls, params=default_params_algobot):
-        return cls(params)
-
+AlgoBotParams = AlgoBot.Params
 
 class BotSimulator:
     def __init__(self, lp, account, tkn0, tkn1, bots, nav=1.0, nav_rate=0.0):
