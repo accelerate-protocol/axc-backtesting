@@ -24,9 +24,20 @@ class LiquidityBot(AbstractAlgoBot):
 
     def __init__(self, params=Params()):
         super().__init__(params)
+        self.account = "lbotuser"
 
     def init_algo(self, lp):
-        return [{"addliquidity1": pool_param} for pool_param in self.params.pool_params]
+        return [
+            {
+                "addliquidity1": {
+                    "account": self.account,
+                    "amount": pool_param[0],
+                    "min_tick": pool_param[1],
+                    "max_tick": pool_param[2],
+                }
+            }
+            for pool_param in self.params.pool_params
+        ]
 
 
 LiquidityBotParams = LiquidityBot.Params
