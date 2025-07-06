@@ -164,7 +164,8 @@ def run_sim(tenv: TokenScenario, bot_list: list[AbstractAlgoBot], seed):
 
 
 def do_paths(
-    tenv: TokenScenario, bot: AbstractAlgoBot, seed="", display=True
+        tenv: TokenScenario, bot: AbstractAlgoBot, seed="",
+        scheduler='threads'
 ) -> SampleResults:
     r = [
         dask.delayed(run_sim)(tenv, bot, hash(f"{seed}seed{i}"))
@@ -172,7 +173,7 @@ def do_paths(
     ]
     with dask.config.set(pool=ProcessPoolExecutor(tenv.processes)):
         with TqdmCallback(desc="run paths", leave=False):
-            samples = dask.compute(*r)
+            samples = dask.compute(*r, scheduler=scheduler)
 
     samples_array = np.transpose(np.array(samples), axes=[1, 0, 2])
     return SampleResults(
@@ -310,7 +311,7 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
     plt.tight_layout()
 
 
-def run_paths(tenv, bots=None, display=True):
+def run_paths(tenv, bots=None, scheduler='threads', display=True):
     if bots is None:
         bots = [
             [
@@ -352,8 +353,8 @@ def run_paths(tenv, bots=None, display=True):
         ]
 
     return [
-        do_paths(tenv, bot, display=display)
-        for bot in (tqdm(bots, leave=False) if display else bots)
+        do_paths(tenv, bot, scheduler=scheduler)
+        for bot in tqdm(bots, leave=False)
     ]
 
 
