@@ -120,18 +120,6 @@ def setup_lp(tenv: TokenScenario):
     lp.initialize(tenv.init_price)
     return (lp, tkn0, tkn1)
 
-def setup_pools(tenv, pools):
-    (lp, tkn0, tkn1) = setup_lp(tenv)
-    adapter = BotSimulator(
-        lp,
-        tenv.user,
-        tkn0,
-        tkn1,
-        [LiquidityBot(LiquidityBot.Params(pool_params=pools))],
-    )
-    adapter.init_step()
-    return (lp, tkn0, tkn1)
-
 def do_calc2(tenv: TokenScenario, params, names) -> pd.DataFrame:
     results = []
     for param, name in zip(params, names):
@@ -419,6 +407,5 @@ __all__ = [
     "token_scenario_baseline",
     "run_paths",
     "runme",
-    "plot_samples",
-    "setup_pools"
+    "plot_samples"
 ]
