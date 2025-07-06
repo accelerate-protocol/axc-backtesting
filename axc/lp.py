@@ -95,7 +95,7 @@ def plotme(
     plt.show()
 
 
-def get_tick(lp, x: str):
+def get_tick(lp, x: str | float):
     if x == "min_tick":
         return UniV3Utils.getMinTick(lp.tickSpacing)
     if x == "max_tick":
