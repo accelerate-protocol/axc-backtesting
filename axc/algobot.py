@@ -16,6 +16,7 @@ from uniswappy import (
     EventSelectionModel,
     TokenDeltaModel,
     MockAddress,
+    RemoveLiquidity,
 )
 
 
@@ -144,8 +145,6 @@ class BotSimulator:
             "nav_net": [],
         }
         self.pending_redemption0 = 0
-        self.last_deposit0to1 = None
-        self.last_deposit1to0 = None
 
     def import_state(self):
         nav_factor = (
@@ -159,9 +158,9 @@ class BotSimulator:
             "price": self.lp.get_price(self.tkn0),
             "nsteps": self.nsteps,
             "accounts": {
-                owner: self.lp.get_positions_for_owner(owner) \
+                owner: self.lp.get_positions_for_owner(owner)
                 for owner in self.lp.get_owners()
-            }
+            },
         }
 
     def exec(self, bot, cmds):
@@ -186,10 +185,15 @@ class BotSimulator:
                             self.tkn0,
                             v["account"],
                             v["amount"],
-                            get_tick(self.lp, v["min_tick"]),
-                            get_tick(self.lp, v["max_tick"]),
+                            v.get(
+                                "min_tick_value",
+                                get_tick(self.lp, v.get("min_tick", None)),
+                            ),
+                            v.get(
+                                "max_tick_value",
+                                get_tick(self.lp, v.get("max_tick", None)),
+                            ),
                         )
-                        self.last_deposit0to1 = self.lp.get_last_liquidity_deposit()
                     except AssertionError:
                         pass
                 if k == "addliquidity1":
@@ -199,10 +203,47 @@ class BotSimulator:
                             self.tkn1,
                             v["account"],
                             v["amount"],
-                            get_tick(self.lp, v["min_tick"]),
-                            get_tick(self.lp, v["max_tick"]),
+                            v.get(
+                                "min_tick_value",
+                                get_tick(self.lp, v.get("min_tick", None)),
+                            ),
+                            v.get(
+                                "max_tick_value",
+                                get_tick(self.lp, v.get("max_tick", None)),
+                            ),
                         )
-                        self.last_deposit1to0 = self.lp.get_last_liquidity_deposit()
+                    except AssertionError:
+                        pass
+                if k == "addliquidity":
+                    try:
+                        out = self.lp.mint(
+                            v["account"],
+                            v.get(
+                                "min_tick_value",
+                                get_tick(self.lp, v.get("min_tick", None)),
+                            ),
+                            v.get(
+                                "max_tick_value",
+                                get_tick(self.lp, v.get("max_tick", None)),
+                            ),
+                            v["amount"],
+                        )
+                    except AssertionError:
+                        pass
+                if k == "removeliquidity":
+                    try:
+                        out = self.lp.burn(
+                            v["account"],
+                            v.get(
+                                "min_tick_value",
+                                get_tick(self.lp, v.get("min_tick", None)),
+                            ),
+                            v.get(
+                                "max_tick_value",
+                                get_tick(self.lp, v.get("max_tick", None)),
+                            ),
+                            v["amount"],
+                        )
                     except AssertionError:
                         pass
                 if k == "redeem0to1":

@@ -95,7 +95,7 @@ def plotme(
     plt.show()
 
 
-def get_tick(lp, x: str):
+def get_tick(lp, x: str | float):
     if x == "min_tick":
         return UniV3Utils.getMinTick(lp.tickSpacing)
     if x == "max_tick":
@@ -164,8 +164,7 @@ def run_sim(tenv: TokenScenario, bot_list: list[AbstractAlgoBot], seed):
 
 
 def do_paths(
-        tenv: TokenScenario, bot: AbstractAlgoBot, seed="",
-        scheduler='threads'
+    tenv: TokenScenario, bot: AbstractAlgoBot, seed="", scheduler="threads"
 ) -> SampleResults:
     r = [
         dask.delayed(run_sim)(tenv, bot, hash(f"{seed}seed{i}"))
@@ -311,7 +310,7 @@ def plot_liquidity(lp, tkn0, tkn1, df_liq):
     plt.tight_layout()
 
 
-def run_paths(tenv, bots=None, scheduler='threads', display=True):
+def run_paths(tenv, bots=None, scheduler="threads", display=True):
     if bots is None:
         bots = [
             [
@@ -352,10 +351,7 @@ def run_paths(tenv, bots=None, scheduler='threads', display=True):
             ],
         ]
 
-    return [
-        do_paths(tenv, bot, scheduler=scheduler)
-        for bot in tqdm(bots, leave=False)
-    ]
+    return [do_paths(tenv, bot, scheduler=scheduler) for bot in tqdm(bots, leave=False)]
 
 
 def plot_samples(lp_price_samples, ylow=None, yhigh=None):
@@ -369,6 +365,7 @@ def runme(widgets):
     tenv = token_scenario_baseline
     tenv.tkn_prob = widgets["tkn_prob"].value
     tenv.swap_size = widgets["swap_size"].value
+    tenv.nav_rate = widgets["nav_rate"].value
     widgets["output"].clear_output()
     with widgets["output"]:
         samples = run_paths(
@@ -377,10 +374,19 @@ def runme(widgets):
                 [
                     LiquidityBot(
                         LiquidityBot.Params(
+                            account="userlp",
                             pool_params=[
                                 [tenv.user_lp, "min_tick", "max_tick"],
+                            ],
+                        )
+                    ),
+                    LiquidityBot(
+                        LiquidityBot.Params(
+                            account="systemlp",
+                            pool_params=[
                                 [tenv.reserve, tenv.reserve_lower, tenv.nav],
-                            ]
+                            ],
+                            adapt_nav=0.01,
                         )
                     ),
                     AlgoBot(),
