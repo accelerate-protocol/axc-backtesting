@@ -153,10 +153,15 @@ class BotSimulator:
             if self.nav_rate == 0.0
             else math.exp(self.nav_rate / 100.0 * float(self.nsteps) / 100.0)
         )
+
         return {
             "nav": self.nav * nav_factor,
             "price": self.lp.get_price(self.tkn0),
             "nsteps": self.nsteps,
+            "accounts": {
+                owner: self.lp.get_positions_for_owner(owner) \
+                for owner in self.lp.get_owners()
+            }
         }
 
     def exec(self, bot, cmds):
