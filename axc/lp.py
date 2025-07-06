@@ -120,6 +120,7 @@ def setup_lp(tenv: TokenScenario):
     lp.initialize(tenv.init_price)
     return (lp, tkn0, tkn1)
 
+
 def do_calc2(tenv: TokenScenario, params, names) -> pd.DataFrame:
     results = []
     for param, name in zip(params, names):
@@ -407,5 +408,5 @@ __all__ = [
     "token_scenario_baseline",
     "run_paths",
     "runme",
-    "plot_samples"
+    "plot_samples",
 ]

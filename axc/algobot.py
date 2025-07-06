@@ -179,10 +179,10 @@ class BotSimulator:
                         out = AddLiquidity().apply(
                             self.lp,
                             self.tkn0,
-                            self.account,
-                            v[0],
-                            get_tick(self.lp, v[1]),
-                            get_tick(self.lp, v[2]),
+                            v["account"],
+                            v["amount"],
+                            get_tick(self.lp, v["min_tick"]),
+                            get_tick(self.lp, v["max_tick"]),
                         )
                         self.last_deposit0to1 = self.lp.get_last_liquidity_deposit()
                     except AssertionError:
@@ -192,10 +192,10 @@ class BotSimulator:
                         out = AddLiquidity().apply(
                             self.lp,
                             self.tkn1,
-                            self.account,
-                            v[0],
-                            get_tick(self.lp, v[1]),
-                            get_tick(self.lp, v[2]),
+                            v["account"],
+                            v["amount"],
+                            get_tick(self.lp, v["min_tick"]),
+                            get_tick(self.lp, v["max_tick"]),
                         )
                         self.last_deposit1to0 = self.lp.get_last_liquidity_deposit()
                     except AssertionError:
