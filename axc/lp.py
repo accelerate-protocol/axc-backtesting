@@ -376,7 +376,7 @@ def runme(widgets):
             [
                 [
                     LiquidityBot(
-                        LiquidityBotParams(
+                        LiquidityBot.Params(
                             pool_params=[
                                 [tenv.user_lp, "min_tick", "max_tick"],
                                 [tenv.reserve, tenv.reserve_lower, tenv.nav],
