@@ -29,6 +29,7 @@ from tqdm.autonotebook import tqdm
 from tqdm.dask import TqdmCallback
 from axc.algobot import AlgoBot, BotSimulator, AbstractAlgoBot
 from axc.liquidity import LiquidityBot
+from axc.risk import calculate_es, TailType
 
 # The graphs were taken from notebooks/medium_articles/order_book.ipynb
 # in the uniswappy distribution
@@ -215,7 +216,8 @@ def plot_path(lp_prices, lp_liquidity) -> None:
 
 
 def plot_distribution(
-    samples, title="Price (TKN)", ylow=None, yhigh=None, ylabel="Price (TKN/USDT)"
+    samples, title="Price (TKN)", ylow=None, yhigh=None, ylabel="Price (TKN/USDT)",
+    es=0.95
 ) -> None:
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
@@ -224,6 +226,16 @@ def plot_distribution(
         ax=p_ax, x=xaxis, samples=samples, palette="cool", plot_samples=False
     )
     p_ax.plot(xaxis, np.mean(samples, axis=0), color="w", linewidth=3, label="Price")
+    if es is not None:
+        p_ax.plot(xaxis,
+                  calculate_es(samples, es, TailType.DOWN),
+                  label = f'Expected shortfall {es} down'
+                 )
+        p_ax.plot(xaxis,
+                  calculate_es(samples, es, TailType.UP),
+                  label = f'Expected shortfall {es} up'
+                 )
+    
     p_ax.set_title(title)
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
