@@ -393,11 +393,11 @@ def runme(widgets):
                 ]
             ],
         )
-        plot_samples([samples[0].price])
-        plot_samples([samples[0].reserve0])
-        plot_samples([samples[0].reserve1])
-        plot_samples([samples[0].pending_redemption0])
-        plot_samples([samples[0].nav_net])
+        plot_distribution(samples[0].price, "Price")
+        plot_distribution(samples[0].reserve0, "Reserve (TKN)")
+        plot_distribution(samples[0].reserve1, "Reserve (USDT)")
+        plot_distribution(samples[0].pending_redemption0, "Pending Redemption (TKN)")
+        plot_distribution(samples[0].nav_net, "Net NAV")
 
 
 __all__ = [
