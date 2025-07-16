@@ -378,6 +378,7 @@ def runme(widgets):
     tenv.tkn_prob = widgets["tkn_prob"].value
     tenv.swap_size = widgets["swap_size"].value
     tenv.nav_rate = widgets["nav_rate"].value
+    adapt_nav = widgets["adapt_nav"].value
     widgets["output"].clear_output()
     with widgets["output"]:
         samples = run_paths(
@@ -398,7 +399,7 @@ def runme(widgets):
                             pool_params=[
                                 [tenv.reserve, tenv.reserve_lower, tenv.nav],
                             ],
-                            adapt_nav=0.01,
+                            adapt_nav= (None if adapt_nav == 0.0 else adapt_nav),
                         )
                     ),
                     AlgoBot(),
