@@ -217,7 +217,7 @@ def plot_path(lp_prices, lp_liquidity) -> None:
 
 def plot_distribution(
     samples, title="Price (TKN)", ylow=None, yhigh=None, ylabel="Price (TKN/USDT)",
-    es=0.95
+    es=0.95, nav=None
 ) -> None:
     fig, (p_ax) = plt.subplots(nrows=1, sharex=False, sharey=False, figsize=(10, 6))
     xaxis = np.arange(np.shape(samples)[1])
@@ -235,7 +235,11 @@ def plot_distribution(
                   calculate_es(samples, es, TailType.UP),
                   label = f'Expected shortfall {es} up'
                  )
-    
+    if nav is not None:
+        p_ax.plot(xaxis,
+            nav,
+            label = 'NAV'
+        )
     p_ax.set_title(title)
     p_ax.legend(facecolor="lightgray", loc="upper left")
     p_ax.set_xlabel("Trades")
