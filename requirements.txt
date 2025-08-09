@@ -3,3 +3,4 @@ matplotlib
 pymc
 pandas
 uniswappy
+ipympl
