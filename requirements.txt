@@ -4,3 +4,5 @@ pymc
 pandas
 uniswappy
 ipympl
+mystmd
+
