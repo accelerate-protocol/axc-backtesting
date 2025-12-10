@@ -5,4 +5,8 @@ pandas
 uniswappy
 ipympl
 mystmd
-
+yfinance
+icecream
+nbstripout
+scikit-learn
+statsmodel
