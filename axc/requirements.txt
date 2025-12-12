@@ -8,5 +8,5 @@ mystmd
 yfinance
 icecream
 nbstripout
-
+scikit-learn
 
