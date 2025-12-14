@@ -13,6 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 
+ic.enable()
 
 class Pricer:
     """
@@ -61,8 +62,11 @@ class Pricer:
         df = df[["Close"]]
         df["prev_month_end"] = df.index - pd.DateOffset(months=1)
         df["prev_month_close"] = (
-#            df["prev_month_end"].map(lambda x: item(df["Close"], x)).ffill().dropna()
-           df["prev_month_end"].map(lambda x: df["Close"].get(x, None)).ffill().dropna()
+            #            df["prev_month_end"].map(lambda x: item(df["Close"], x)).ffill().dropna()
+            df["prev_month_end"]
+            .map(lambda x: df["Close"].get(x, None))
+            .ffill()
+            .dropna()
         )
         df["return"] = (
             (df["Close"] - df["prev_month_close"]) / df["prev_month_close"] * 100
@@ -133,4 +137,3 @@ def plot_scatter_3d(df: pd.DataFrame, cols: list[str]) -> None:
 
 if __name__ == "main":
     pricer = Pricer()
-
