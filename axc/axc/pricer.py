@@ -10,6 +10,7 @@ import yfinance as yf
 from icecream import ic
 from sklearn.decomposition import FactorAnalysis
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 
 
@@ -22,24 +23,51 @@ class Pricer:
         """
         set constructor
         """
-        self.return_names = ["^GSPC", "^RUT", "GC=F", "^990100-USD-STRD"]
+        self.return_names = [
+            "^GSPC",
+            "^RUT",
+            "GC=F",
+            "^990100-USD-STRD",
+            "^IXIC",
+            "^VIX",
+            "^DJI",
+            "^N225",
+        ]
         self.scaler = StandardScaler()
         self.random_state = 42
+
+    def load_market_data(self, filename: str) -> pd.DataFrame:
+        """
+        Load returns
+        """
+        df = self.replace_last_day_of_month(pd.read_csv(filename), "Date")
+        return df.sort_values(by="Date").set_index("Date")
 
     def get_returns(self) -> pd.DataFrame:
         """
         Load monthly returns for S&P 500, Russell 2000, and gold prices
         """
-        return pd.concat({x: self.get_return(x) for x in self.return_names}, axis=1)
+        return pd.concat(
+            {x: self.get_return(x) for x in self.return_names}, axis=1
+        ).dropna()
 
     def get_return(self, index: str) -> pd.Series:
         """
         get returns
         """
-        df = yf.download(index, start="2000-01-01", interval="1mo")
+        df = yf.download(index, start="2000-01-01")
         df.index.name = "Date"
         df.columns = ["Close", "High", "Low", "Open", "Volume"]
-        return df["Close"].pct_change().dropna()
+        df = df[["Close"]]
+        df["prev_month_end"] = df.index - pd.DateOffset(months=1)
+        df["prev_month_close"] = (
+#            df["prev_month_end"].map(lambda x: item(df["Close"], x)).ffill().dropna()
+           df["prev_month_end"].map(lambda x: df["Close"].get(x, None)).ffill().dropna()
+        )
+        df["return"] = (
+            (df["Close"] - df["prev_month_close"]) / df["prev_month_close"] * 100
+        )
+        return df["return"].ffill().dropna()
 
     def get_factors(
         self, returns_in: pd.DataFrame, n: int
@@ -47,9 +75,10 @@ class Pricer:
         """
         get factors
         """
+        scaler = StandardScaler()
         returns = returns_in.dropna()
+        returns_scaled = scaler.fit_transform(returns)
         factor_names = [f"Factor{i}" for i in range(1, n + 1)]
-        returns_scaled = self.scaler.fit_transform(returns)
         fa = FactorAnalysis(n_components=n, random_state=self.random_state)
         factors = fa.fit_transform(returns_scaled)
         loadings = fa.components_.T
@@ -57,6 +86,28 @@ class Pricer:
             pd.DataFrame(factors, columns=factor_names, index=returns.index),
             pd.DataFrame(loadings, columns=factor_names, index=returns.columns),
         )
+
+    def get_regression(self, factors: pd.DataFrame, target: pd.DataFrame):
+        """
+        do regression
+        """
+        model = LinearRegression()
+        return model.fit(factors, target)
+
+    @staticmethod
+    def replace_last_day_of_month(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
+        """
+        Replace the date in the specified column with the last day of the month.
+
+        Parameters:
+        df (pd.DataFrame): The input DataFrame.
+        date_col (str): The name of the column containing dates.
+
+        Returns:
+        pd.DataFrame: A new DataFrame with the updated date column.
+        """
+        df[date_col] = pd.to_datetime(df[date_col]) + pd.offsets.MonthEnd(0)
+        return df
 
 
 def plot_factors(df: pd.DataFrame) -> None:
@@ -82,4 +133,4 @@ def plot_scatter_3d(df: pd.DataFrame, cols: list[str]) -> None:
 
 if __name__ == "main":
     pricer = Pricer()
-    ic(pricer.load_market_data())
+
