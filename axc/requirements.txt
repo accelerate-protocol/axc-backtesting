@@ -9,4 +9,4 @@ yfinance
 icecream
 nbstripout
 scikit-learn
-
+statsmodel
