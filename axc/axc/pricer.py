@@ -11,6 +11,7 @@ from icecream import ic
 from sklearn.decomposition import FactorAnalysis
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Lasso
 import matplotlib.pyplot as plt
 
 ic.enable()
@@ -30,7 +31,6 @@ class Pricer:
             "GC=F",
             "^990100-USD-STRD",
             "^IXIC",
-            "^VIX",
             "^DJI",
             "^N225",
         ]
@@ -82,7 +82,8 @@ class Pricer:
         scaler = StandardScaler()
         returns = returns_in.dropna()
         returns_scaled = scaler.fit_transform(returns)
-        factor_names = [f"Factor{i}" for i in range(1, n + 1)]
+#        returns_scaled = returns
+        factor_names = self.factor_names(n)
         fa = FactorAnalysis(n_components=n, random_state=self.random_state)
         factors = fa.fit_transform(returns_scaled)
         loadings = fa.components_.T
@@ -91,13 +92,36 @@ class Pricer:
             pd.DataFrame(loadings, columns=factor_names, index=returns.columns),
         )
 
-    def get_regression(self, factors: pd.DataFrame, target: pd.DataFrame):
+    def collate_returns(self, factors: pd.DataFrame, target: pd.DataFrame):
+        """
+        collate returns
+        """
+        df = pd.concat([factors, target], axis=1)
+        df.iloc[:, :-1] = df.iloc[:, :-1].ffill()
+        return df[~df['Return'].isna()]
+
+    def get_regression(self, df: pd.DataFrame):
         """
         do regression
         """
-        model = LinearRegression()
-        return model.fit(factors, target)
+        df = df.copy()
+        X = df.iloc[:, :-1]  # All columns except the last one
+        y = df.iloc[:, -1]
+ #       model = LinearRegression()
+        model = Lasso(alpha=0.01)
+        model.fit(X, y)
+        y_pred = model.predict(X)
+        df['predicted'] = y_pred
+        ic(f"Coefficients: {model.coef_}")
+        ic(f"Intercept: {model.intercept_}")
+        return (model, df)
 
+#        model = LinearRegression()
+#        return model.fit(factors, target)
+
+    @staticmethod
+    def factor_names(n: int):
+        return [f"Factor{i}" for i in range(1, n + 1)]
     @staticmethod
     def replace_last_day_of_month(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
         """
