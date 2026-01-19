@@ -1,0 +1,26 @@
+version: 1
+project:
+  # description:
+  keywords: []
+  authors: []
+  # github:
+  # bibliography: []
+  toc:
+    - file: 01_onboarding.md
+    - file: 02_token.md
+    - file: 03_grow.md
+    - file: 04_governance.md
+    - file: 05_disclaimer.md
+site:
+  template: book-theme
+  # title:
+  # options:
+  #   logo: my_logo.png
+  nav: []
+  options:
+    outline_maxdepth: 3
+  actions:
+    - title: Learn More
+      url: https://mystmd.org/guide
+  domains: []
+
