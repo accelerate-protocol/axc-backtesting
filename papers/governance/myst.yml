@@ -17,7 +17,8 @@ site:
   # options:
   #   logo: my_logo.png
   nav: []
-  outline_maxdepth: 3
+  options:
+    outline_maxdepth: 3
   actions:
     - title: Learn More
       url: https://mystmd.org/guide
