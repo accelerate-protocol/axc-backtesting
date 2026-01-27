@@ -1,17 +1,16 @@
 FROM python:latest
 WORKDIR /app
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends nodejs npm \
+  && apt-get install --yes --no-install-recommends nodejs npm git \
   && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir mystmd
-COPY . .
-RUN myst build --html \
-  && npm install -g serve
+RUN git clone http://github.com/accelerate-protocol/axc-backtesting.git
+RUN npm install -g serve
 RUN adduser --disabled-password --gecos '' appuser \
     && chown -R appuser:appuser /app
 USER appuser
 EXPOSE 3000
 
-CMD ["serve", "--cors",  "_build/html/"]
-#CMD ["myst", "start"]
+CMD ["bash", "./axc-backtesting/papers/governance/startup.sh"]
+
 
