@@ -6,11 +6,11 @@ project:
   # github:
   # bibliography: []
   toc:
-    - file: 01_onboarding.md
-    - file: 02_token.md
-    - file: 03_grow.md
-    - file: 04_governance.md
-    - file: 05_disclaimer.md
+    - file: 10_onboarding.md
+    - file: 20_token.md
+    - file: 30_grow.md
+    - file: 40_governance.md
+    - file: 50_disclaimer.md
 site:
   template: book-theme
   # title:
