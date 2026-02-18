@@ -10,8 +10,8 @@ project:
   toc:  
     \- file: 05\_overview.md  
     \- file: 10\_onboarding.md  
+    \- file: 20\_operations.md  
     \- file: 30\_grow.md  
-    \- file: 40\_governance.md  
     \- file: 45\_legal.md  
     \- file: 50\_disclaimer.md  
 site:  
