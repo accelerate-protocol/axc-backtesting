@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd axc-backtesting
-git pull .
+git pull
 cd papers/governance
 ./splitfile.py source.md --delimiter "# %" --overwrite
 myst build --html
