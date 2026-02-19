@@ -48,7 +48,7 @@ class MarkdownFileSplitter:
                     if current_file is not None:
                         for image in pending_images:
                             if image in images_dict:
-                                current_file.write(f'[{image}]: {images_dict[image]}')
+                                current_file.write(f'[{image}]: {images_dict[image]}\n')
                         current_file.close()
                     current_file = None
                     pending_images = []
@@ -85,7 +85,7 @@ class MarkdownFileSplitter:
             if current_file is not None:
                 for image in pending_images:
                     if image in images_dict:
-                        current_file.write(f'[{image}]: {images_dict[image]}')
+                        current_file.write(f'[{image}]: {images_dict[image]}\n')
                 current_file.close()
 
     def __enter__(self):
