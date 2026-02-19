@@ -3,6 +3,7 @@ import sys
 import os
 import argparse
 import logging
+import re
 
 class MarkdownFileSplitter:
     """
@@ -29,15 +30,26 @@ class MarkdownFileSplitter:
         """
         current_file = None
         should_unescape = False
+        lines = list(self._input)
+        images_dict = {}
+        pending_images = []
 
         try:
-            for line in self._input:
+            for line in lines:
+                match = re.match(r"\[([^]]+)\]\s*:\s*(.*)", line)
+                if match:
+                    images_dict[match.group(1)] = match.group(2)
+
+            for line in lines:
                 if line.startswith(self._delimiter):
                     # Close previous file if it exists
                     if current_file is not None:
+                        for image in pending_images:
+                            if image in images_dict:
+                                current_file.write(f'[{image}]: {images_dict[image]}')
                         current_file.close()
-                    
                     current_file = None
+                    pending_images = []
 
                     # Extract filename and remove backslashes
                     filename = line[len(self._delimiter):].strip()
@@ -51,6 +63,13 @@ class MarkdownFileSplitter:
                     current_file = open(filename, 'w', encoding='utf-8')
                     # Set local setting
                     should_unescape = not filename.endswith('.md')
+                else:
+                    match = re.match(r"\[([^]]+)\]\s*:\s*(.*)", line)
+                    if match:
+                       continue
+                    match = re.search(r"!\[\]\[([^]]+)\]\s*", line)
+                    if match:
+                        pending_images.append(match.group(1))
 
                 if current_file is not None:
                     # Write content
@@ -66,6 +85,9 @@ class MarkdownFileSplitter:
         finally:
             # Ensure file is closed at the end of processing
             if current_file is not None:
+                for image in pending_images:
+                    if image in images_dict:
+                        current_file.write(f'[{image}]: {images_dict[image]}')
                 current_file.close()
 
     def __enter__(self):
