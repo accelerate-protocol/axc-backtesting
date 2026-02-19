@@ -23,7 +23,7 @@ class MarkdownFileSplitter:
         self._delimiter = delimiter
         self._overwrite = overwrite
 
-    def process(self):
+    def process(self) -> None:
         """
         Reads from the input stream and writes to subfiles.
         Current file handling and closing are local to this method.
@@ -31,16 +31,18 @@ class MarkdownFileSplitter:
         current_file = None
         should_unescape = False
         lines = list(self._input)
-        images_dict = {}
-        pending_images = []
+        images_dict: dict[str, str] = {}
+        pending_images: list[str] = []
+        content : list[str]= []
 
         try:
             for line in lines:
-                match = re.match(r"\[([^]]+)\]\s*:\s*(.*)", line)
-                if match:
+                if match := re.match(r"\[([^]]+)\]\s*:\s*(.*)", line):
                     images_dict[match.group(1)] = match.group(2)
+                else:
+                    content.append(line)
 
-            for line in lines:
+            for line in content:
                 if line.startswith(self._delimiter):
                     # Close previous file if it exists
                     if current_file is not None:
@@ -64,11 +66,7 @@ class MarkdownFileSplitter:
                     # Set local setting
                     should_unescape = not filename.endswith('.md')
                 else:
-                    match = re.match(r"\[([^]]+)\]\s*:\s*(.*)", line)
-                    if match:
-                       continue
-                    match = re.search(r"!\[\]\[([^]]+)\]\s*", line)
-                    if match:
+                    if match := re.search(r"!\[\]\[([^]]+)\]\s*", line):
                         pending_images.append(match.group(1))
 
                 if current_file is not None:

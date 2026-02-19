@@ -13,7 +13,7 @@ project:
     \- file: 20\_operations.md  
     \- file: 30\_grow.md  
     \- file: 45\_legal.md  
-    \- file: 50\_disclaimer.md  
+    \- file: 50\_disclaimers.md  
 site:  
   template: book-theme  
   \# title:  
