@@ -3,6 +3,8 @@ services:
       build:
          context: .
          dockerfile: Dockerfile
+      environment:
+         - GIT_BRANCH=main
       ports:
          - 3003:3000
       restart: always
