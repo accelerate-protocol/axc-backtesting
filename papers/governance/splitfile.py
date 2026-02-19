@@ -4,6 +4,7 @@ import os
 import argparse
 import logging
 import re
+from typing import Optional, IO
 
 class MarkdownFileSplitter:
     """
@@ -12,7 +13,7 @@ class MarkdownFileSplitter:
     'exit()' is a NOP to allow nesting context managers.
     """
 
-    def __init__(self, input_stream, delimiter, overwrite=False):
+    def __init__(self, input_stream: IO, delimiter: str, overwrite: bool=False):
         """
         Initialize the splitter.
         
@@ -28,9 +29,9 @@ class MarkdownFileSplitter:
         Reads from the input stream and writes to subfiles.
         Current file handling and closing are local to this method.
         """
-        current_file = None
-        should_unescape = False
-        lines = list(self._input)
+        current_file: Optional[IO] = None
+        should_unescape: bool = False
+        lines: list[str] = list(self._input)
         images_dict: dict[str, str] = {}
         pending_images: list[str] = []
         content : list[str]= []
@@ -54,35 +55,31 @@ class MarkdownFileSplitter:
                     pending_images = []
 
                     # Extract filename and remove backslashes
-                    filename = line[len(self._delimiter):].strip()
-                    filename = filename.replace('\\', '')
+                    filename = line[len(self._delimiter):].strip().replace('\\', '')
 
                     if not self._overwrite and os.path.exists(filename):
                         logging.warning(f"Output file '{filename}' already exists. Skipping.")
                         continue
-                elif current_file is None and line.strip():
+                elif current_file and line.strip():
                     # Open new file
                     current_file = open(filename, 'w', encoding='utf-8')
                     # Set local setting
                     should_unescape = not filename.endswith('.md')
-                else:
-                    if match := re.search(r"!\[\]\[([^]]+)\]\s*", line):
-                        pending_images.append(match.group(1))
+                elif match := re.search(r"!\[\]\[([^]]+)\]\s*", line):
+                    pending_images.append(match.group(1))
 
-                if current_file is not None:
-                    # Write content
-                    content = line
-                    if should_unescape:
-                        # Remove backslashes
-                        content = content.replace('\\', '')
-                    current_file.write(content)
+                if current_file:
+                    current_file.write(
+                        line.replace('\\', '') \
+                        if should_unescape else line
+                    )
                     
         except Exception as e:
             logging.error(f"An error occurred during processing: {e}")
             raise
         finally:
             # Ensure file is closed at the end of processing
-            if current_file is not None:
+            if current_file:
                 for image in pending_images:
                     if image in images_dict:
                         current_file.write(f'[{image}]: {images_dict[image]}\n')
