@@ -17,7 +17,8 @@ class MarkdownFileSplitter:
     'exit()' is a NOP to allow nesting context managers.
     """
 
-    def __init__(self, input_stream: IO, delimiter: str, overwrite: bool=False):
+    def __init__(self, input_stream: IO, delimiter: str, overwrite: bool=False,
+                 lang: str="en"):
         """
         Initialize the splitter.
         
@@ -27,17 +28,18 @@ class MarkdownFileSplitter:
         self._input: IO = input_stream
         self._delimiter: str = delimiter
         self._overwrite: bool = overwrite
+        self._lang: str = lang
         self._current_file: Optional[IO] = None
         self._images_dict: dict[str, str] = {}
         self._pending_images: list[str] = []
-
+        self._current_lang: Optional[str] = None
 
     def process(self) -> None:
         """
         Reads from the input stream and writes to subfiles.
         Current file handling and closing are local to this method.
         """
-        should_unescape: bool = False
+        is_markdown: bool = False
         lines: list[str] = list(self._input)
         content : list[str]= []
         filename: Optional[str] = None
@@ -45,6 +47,7 @@ class MarkdownFileSplitter:
         self._current_file = None
         self._images_dict = {}
         self._pending_images = []
+        self._current_lang = None
         try:
             for line in lines:
                 if match := re.match(r"\[([^]]+)\]\s*:\s*(.*)", line):
@@ -59,29 +62,36 @@ class MarkdownFileSplitter:
 
                     # Extract filename and remove backslashes
                     filename = line[len(self._delimiter):].strip().replace('\\', '')
+                    is_markdown = not filename.endswith('.md')
 
-                    if not self._overwrite and os.path.exists(filename):
+                    if self._lang != "en":
+                        name_without_ext, ext = os.path.splitext(filename)
+                        filename = f'{name_without_ext}-{self._lang}{ext}'
+
+                    if not self._overwrite and os.path.exists(filename) and not is_markdown:
                         logging.warning(
                             "Output file '%s' already exists. Skipping.", filename
                         )
                         filename = None
                     continue
 
+                if line.startswith("%lang"):
+                    self._current_lang = line[len("%lang")].strip().replace('\\', '')
+
                 # skip white space headers
                 if filename and not self._current_file and line.strip():
                     # Open new file
                     self._current_file = open(filename, 'w', encoding='utf-8')
-                    # Set local setting
-                    should_unescape = not filename.endswith('.md')
 
                 if self._current_file:
                     if match := re.search(r"!\[\]\[([^]]+)\]\s*", line):
                         self._pending_images.append(match.group(1))
 
-                    self._current_file.write(
-                        line.replace('\\', '') \
-                        if should_unescape else line
-                    )
+                    if self._current_lang is None or self._current_lang == self._lang:
+                        self._current_file.write(
+                            line.replace('\\', '') \
+                            if is_markdown else line
+                        )
         except Exception:
             logging.error("An error occurred during processing", exc_info=True)
             raise
@@ -97,6 +107,7 @@ class MarkdownFileSplitter:
             self._current_file.close()
         self._current_file = None
         self._pending_images = []
+        self._current_lang = None
 
     def __enter__(self):
         return self
@@ -119,6 +130,7 @@ def main():
 
     # Optional argument for delimiter
     parser.add_argument('--delimiter', '-d', default='---', help='Delimiter line to split files')
+    parser.add_argument('--lang', '-l', default='en', help='Language')
     parser.add_argument("--overwrite", action="store_const", const=True, default=False)
 
     args = parser.parse_args()
@@ -127,7 +139,8 @@ def main():
     if args.input_file:
         try:
             with open(args.input_file, 'r', encoding='utf-8') as f:
-                splitter = MarkdownFileSplitter(f, args.delimiter, args.overwrite)
+                splitter = MarkdownFileSplitter(f, args.delimiter, args.overwrite,
+                                                args.lang)
                 splitter.process()
         except FileNotFoundError:
             logging.error("File not found: '%s'", args.input_file)
