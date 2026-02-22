@@ -56,6 +56,8 @@ AXC labs creates RWAs that will be natively issued on-chain and will be accessib
 
 # %10\_onboarding.md
 
+%lang en
+
 # Onboarding
 
 AXC is a decentralized finance protocol focused on RWA (Real World Assets). Through the  **Invest** and  **Portfolio** pages, you can allocate your on-chain funds into Vaults backed by real-world yields.
@@ -72,22 +74,60 @@ Before you start, you need to understand the two core asset types on the platfor
 
 1. **Connect Wallet:** Click on the top right corner to connect your Web3 wallet (e.g., MetaMask) and ensure you switch to the correct network (e.g., BSC network).
 
+%lang zh
+
+AXC 是一个专注于 RWA（Real World Assets，现实世界资产）的去中心化金融协议。通过 **Invest（投资）** 和 **Portfolio（投资组合）** 页面，您可以将链上资金投入到由现实世界收益支持的金库（Vaults）中。  
+**一、 核心概念**
+
+在开始操作前，您需要了解平台上的两类核心资产：
+
+1. **Maturity（定期型）：** 具有明确的到期日，类似于定期存款或债券。到期后方可提取本金和收益。  
+2. **Perpetual（永续型）：** 没有固定到期日，通常根据底层资产的现金流持续产生收益，具有更高的流动性。  
+3. **RBF（Revenue Based Financing）：** 基于收入融资的模型，收益通常来源于企业或项目的实际营收分账。
+
+%lang all
+
 ![][image1]
+
+%lang en
 
 2. **Bind Email:** Bind your email address to receive real-time updates on AXC platform Vault assets, investment yield reports, and underlying asset data.
 
+%lang zh
+
+2. **绑定邮箱**：绑定您的电子邮箱用于接收AXC平台Vault资产、投资收益报告以及底层资产数据信息的实时更新。
+
+%lang all
+
 ![][image2]
+
+%lang en
 
 3. **Select Vault:** Browse available investment opportunities on the Invest or AXC Vaults page.  
      
-   * **Filter：**  Users can choose to filter platform Vault investment opportunities quickly based on asset type, blockchain network, Vault type, and investment type. ![][image3]
+   * **Filter：**  Users can choose to filter platform Vault investment opportunities quickly based on asset type, blockchain network, Vault type, and investment type. 
 
-   
+%lang zh
+
+3. **选择金库：** 在 Invest 或 AXC Vaults 页面浏览可用的投资机会。  
+   * **Filter：** 用户可选择根据资产类型、区块链网络、Vault类型和投资类型快速筛选平台Vault投资机会。
+
+%lang all
+
+* ![][image3]
+
+%lang en
 
 4. **Deposit Funds:** When investing, users must first agree to the AXC platform's "Terms and Conditions" regarding Vault subscriptions, enter the investment amount, and confirm the authorization through their wallet. Your funds will be converted into the corresponding Vault token (e.g., GROWTH 1, GROWTH 2, etc.).
 
+%lang zh
+
+4. **存入资金：** 用户进行投资时，需先同意AXC平台关于Vault 认购的《Terms and Conditons》，输入投资金额并通过钱包确认授权。您的资金将被转化为对应Vault的金库代币（如 GROWTH 1, GROWTH 2 等）。
+
+%lang all  
 ![][image4]
 
+%lang en  
 **III. Asset Management (Portfolio Page Details)** Once you have completed your investment, you can monitor all your assets on the  **Portfolio** page (i.e., the page shown in your screenshot).
 
 **1\. Asset Category Filtering**
@@ -121,13 +161,64 @@ Pay attention to the \*\*toast(( tips at the top of the page. These are system-g
    * **Redemption Processing:** Considering that different real-world assets have different redemption logics, the waiting period for investors to redeem varies. Please refer to the redemption terms and conditions of different Vault assets.  
 3. **Claim Dividends:** If it is an income-generating asset, periodically check for Claim or related yield withdrawal options
 
+%lang zh
+
+%lang all**三、 资产管理 (Portfolio 页面详解)**
+
+一旦完成投资，您可以在 **Portfolio** 页面（即您截图所示页面）监控所有资产。  
+**1\. 资产分类筛选**
+
+* **Positions（仓位）：** 显示您目前持有的所有代币化资产。  
+* **Liquidity（流动性）：** 如果您参与了流动性池提供，在此查看。  
+* **过滤器：** 使用 Maturity / Perpetual 或 RBF / Fund 按钮快速过滤不同性质的资产。
+
+**2\. 数据指标解读**
+
+* **Value（价值）：** 当前持仓的法币估值及代币数量。  
+* **Price（价格）：** 该代币在平台上的当前报价。请注意下方**绿色/红色百分比**，它代表资产价值的近期波动。  
+* **Total Yield（总收益）：** \* **绿色数字：** 代表该笔投资已经产生的累计利润。  
+  * **红色数字：** 代表目前处于账面浮亏状态（可能受底层资产重估或汇率影响）。
+
+**3\. 重要通知栏**
+
+注意页面顶部的**toast tips提示**。这是系统的自动化提醒：
+
+* **Redemption Ready：** 提示您的某个金库已经到期，资金已准备好，需手动点击赎回。  
+* **Dividends Ready：** 提示您持有的RWA Token有可领取的现金分红。
+
+---
+
+**四、 退出与赎回 (Redeem)**
+
+这是投资周期中最关键的一步：
+
+1. **查看状态：** 观察资产右侧的 Redeem 按钮。  
+2. **发起赎回：** \* **亮绿色按钮：** 表示该资产目前允许退出。点击 Redeem，签署钱包交易，您将发起RWA资产转换回基础代币（如 USDC）的赎回请求。  
+   * \*\*灰色按钮：\*\*表示当前不可赎回（可能处于锁定期）。  
+   * \*\*赎回处理：\*\*考虑到不同现实资产的赎回逻辑有差异，投资者等待赎回的周期存在差异，请查阅不同Vault资产的赎回条款规则。  
+3. **领取分红：** 如果是收益型资产，定期查看 Claim 或相关的收益提取选项。
+
+%lang all
+
 ## ![][image5]
+
+%lang en
 
 **V. Security and Recommendations**
 
 * **Pay Attention to Maturity Dates:** For Maturity assets, be sure to pay attention to maturity notifications to promptly recover your asset liquidity.  
 * **Understand Risks:** RWA assets are affected by real-world business activities. Although there are underlying assets as collateral, there are still risks of default or insufficient liquidity.  
 * **Gas Fee Preparation:** Both Claiming dividends and Redeeming require consuming on-chain native tokens as gas fees. Please ensure that your wallet has sufficient funds.
+
+---
+
+%lang zh
+
+**五、 安全与建议**
+
+* **关注到期日：** 对于 Maturity 型资产，务必关注到期通知，以便及时回收您的资产流动性。  
+* **理解风险：** RWA 资产受现实世界业务影响。虽然有底层资产抵押，但仍存在违约或流动性不足的风险。  
+* **Gas 费准备：** 无论是 Claim 分红还是 Redeem 赎回，都需要消耗链上原生代币作为 Gas 费，请确保钱包留有余量。
 
 ---
 

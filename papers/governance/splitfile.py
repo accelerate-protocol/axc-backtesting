@@ -9,6 +9,7 @@ import argparse
 import logging
 import re
 from typing import Optional, IO
+from pathlib import Path
 
 class MarkdownFileSplitter:
     """
@@ -33,6 +34,7 @@ class MarkdownFileSplitter:
         self._images_dict: dict[str, str] = {}
         self._pending_images: list[str] = []
         self._current_lang: Optional[str] = None
+        Path(self._lang).mkdir(exist_ok=True)
 
     def process(self) -> None:
         """
@@ -62,12 +64,8 @@ class MarkdownFileSplitter:
 
                     # Extract filename and remove backslashes
                     filename = line[len(self._delimiter):].strip().replace('\\', '')
+                    filename = f'{self._lang}/{filename}'
                     is_markdown = not filename.endswith('.md')
-
-                    if self._lang != "en":
-                        name_without_ext, ext = os.path.splitext(filename)
-                        filename = f'{name_without_ext}-{self._lang}{ext}'
-
                     if not self._overwrite and os.path.exists(filename) and not is_markdown:
                         logging.warning(
                             "Output file '%s' already exists. Skipping.", filename
@@ -76,7 +74,10 @@ class MarkdownFileSplitter:
                     continue
 
                 if line.startswith("%lang"):
-                    self._current_lang = line[len("%lang")].strip().replace('\\', '')
+                    self._current_lang = line[len("%lang"):].strip().replace('\\', '')
+                    if self._current_lang == "all":
+                        self._current_lang = None
+                    continue
 
                 # skip white space headers
                 if filename and not self._current_file and line.strip():
@@ -86,7 +87,6 @@ class MarkdownFileSplitter:
                 if self._current_file:
                     if match := re.search(r"!\[\]\[([^]]+)\]\s*", line):
                         self._pending_images.append(match.group(1))
-
                     if self._current_lang is None or self._current_lang == self._lang:
                         self._current_file.write(
                             line.replace('\\', '') \

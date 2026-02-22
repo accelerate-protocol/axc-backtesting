@@ -7,4 +7,5 @@ services:
          - GIT_BRANCH=${GIT_BRANCH:-main}
       ports:
          - 3003:3000
+         - 3004:3001
       restart: always
