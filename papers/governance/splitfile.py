@@ -65,7 +65,7 @@ class MarkdownFileSplitter:
                     # Extract filename and remove backslashes
                     filename = line[len(self._delimiter):].strip().replace('\\', '')
                     filename = f'{self._lang}/{filename}'
-                    is_markdown = not filename.endswith('.md')
+                    is_markdown = filename.endswith('.md')
                     if not self._overwrite and os.path.exists(filename) and not is_markdown:
                         logging.warning(
                             "Output file '%s' already exists. Skipping.", filename
@@ -89,8 +89,8 @@ class MarkdownFileSplitter:
                         self._pending_images.append(match.group(1))
                     if self._current_lang is None or self._current_lang == self._lang:
                         self._current_file.write(
-                            line.replace('\\', '') \
-                            if is_markdown else line
+                            line.replace('$', r'\$') \
+                            if is_markdown else line.replace('\\', '')
                         )
         except Exception:
             logging.error("An error occurred during processing", exc_info=True)

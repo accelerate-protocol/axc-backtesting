@@ -13,11 +13,13 @@ cd papers/governance
 ./splitfile.py source.md --delimiter "# %" --overwrite
 
 pushd en
+cp ../*.png .
 myst build --html
 npx serve --cors _build/html/ -l tcp://0.0.0.0:3000 &
 popd
 ./splitfile.py source.md --delimiter "# %" --overwrite --lang zh
 pushd zh
+cp ../*.png .
 npx serve --cors _build/html/ -l tcp://0.0.0.0:3001 &
 popd
 sleep infinity
