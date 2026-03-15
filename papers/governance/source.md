@@ -89,6 +89,8 @@ AXC Labs 创建的 RWA 将原生发行在链上，并且所有市场参与者都
 
 %lang en
 
+# **Onboarding**
+
 **1\. Login**
 
 MetaMask/OKX logins are done via browser extension. The prerequisite is that you have already installed the relevant extension and logged into your wallet. For WalletConnect, you log in by scanning a QR code with your mobile wallet app.
@@ -110,13 +112,8 @@ Using MetaMask as an example, switch to the account you want to log in with in y
 
 ![][image3]
 
-(Make sure that the app reads \*app.axc.xyz\*)
-
 ![][image4]  
 ![][image5]
-
-(It goes to bind email page)  
-(Are there issues with spam spoofing.  Explain what bind email does)
 
 %lang zh
 
