@@ -160,14 +160,20 @@ Follow the prompts to complete the authorization of your wallet account and conf
 
 %lang all
 
-**![][image10]**  
+**![][image10]**
+
 **![][image11]**
 
-**![][image12]**  
-**![][image13]**  
-**![][image14]**  
-**![][image15]**  
-![][image16]  
+**![][image12]**
+
+**![][image13]**
+
+**![][image14]**
+
+**![][image15]**
+
+![][image16]
+
 ![][image17]
 
 %lang zh
@@ -229,7 +235,8 @@ Enter the number of tokens to redeem and click the "Redeem" button to initiate t
 
 %lang all
 
-![][image23]  
+![][image23]
+
 ![][image24]
 
 %lang en
@@ -244,12 +251,16 @@ Follow the prompts to complete the wallet account authorization and transaction 
 ![][image25]  
 ![][image26]
 
-![][image27]  
-![][image28]  
+![][image27]
+
+![][image28]
+
 ![][image29]
 
-![][image30]  
-![][image31]  
+![][image30]
+
+![][image31]
+
 ![][image32]  
 %lang en  
 After the redemption request is successfully executed, a "Success" pop-up window will appear on the details page.
@@ -292,10 +303,12 @@ Before the redemption request cancellation deadline, click the "Cancel" button a
 
 ![][image36]
 
-![][image37]  
+![][image37]
+
 ![][image38]
 
-![][image39]  
+![][image39]
+
 ![][image40]
 
 %lang en
@@ -341,10 +354,14 @@ Click the "Claim" button and complete the wallet account claim request confirmat
 
 %lang all
 
-![][image45]  
-![][image46]  
-![][image47]  
-![][image48]  
+![][image45]
+
+![][image46]
+
+![][image47]
+
+![][image48]
+
 ![][image49]
 
 %lang en  
