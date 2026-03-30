@@ -11,6 +11,7 @@ project:
     \- file: 05\_overview.md  
     \- file: 10\_onboarding.md  
     \- file: 20\_operations.md  
+    \- file: 25\_pricing.md  
     \- file: 30\_grow.md  
     \- file: 45\_legal.md  
     \- file: 50\_disclaimers.md  
@@ -585,6 +586,186 @@ The deposits are based on a monthly deposit period.  For in this example we will
 4. **计算并锁定结算价格：**4月1日的处理使用3月份的净资产价值作为最终结算价格。  
 5. **确认每月净资产价值：**大约在4月20日，3月份的净资产价值计算完成（假设收益率为1%，3月份的净资产价值为1020.1美元）。*实际赎回金额已知，资金开始处理。*  
 6. **资金到账：**\*\*在确认3月份净资产价值后的约15个日历日内。
+
+# %25\_pricing.md
+
+%lang en
+
+# Price computation for alternative assets
+
+%lang zh
+
+# 另类资产的定价计算
+
+%lang en
+
+## **Alternative asset pricing issues**
+
+Alternative assets have pricing difficulties for two reasons
+
+1. An official NAV is not available until after the product is bought or sold  
+2. Alternative assets have different classes for each purchase
+
+Generally, the objective of the tokens issued by AXC is to match the NAV so that the investment characteristics of the token match the underlying so that token holders can ignore the tokenization as much as possible to make investment decisions.  In creating pricing models for deposits and withdrawals, we seek to minimize the discretion exercised by the token manager.
+
+We can begin with a sample underlying fund.
+
+Example:
+
+Custodian buys 100k USD of shares in January
+
+Class S1 \- 100k shares at USD 1
+
+In February the value of Class S1 shares go up to 1.50 USD and the custodian buys 1000 USD of shares.  So the holdings at the end of February
+
+Class S1 \- 100k shares at USD 1.50  
+Class S2 \- 500k shares at USD 1.00
+
+Note that the NAV is not known at the time that the funds are deposited.
+
+%lang zh
+
+**另类资产定价问题**  
+另类资产存在定价难题，原因有两点：
+
+1. 在产品买入或卖出之后，才能确定官方的净资产价值 (NAV)。  
+2. 另类资产每次购买都有不同的类别。
+
+一般来说，AXC发行的代币的目标是与净资产价值相匹配，以便代币的投资特性与底层资产相匹配，从而使代币持有者尽可能忽略代币化过程，以便做出投资决策。在创建用于存入和提取的定价模型时，我们力求最大限度地减少代币管理者所能施加的自主权。
+
+我们可以从一个示例底层基金开始。
+
+示例：
+
+托管方在 1 月份购买了价值 10 万美元的股票。
+
+S1 类——10 万股，价格为 1 美元。  
+在 2 月份，S1 类的股票价值上涨至 1.50 美元，托管方又购买了价值 1000 美元的股票。因此，截至 2 月底的持有量为：
+
+S1 类——10 万股，价格为 1.50 美元。  
+S2 类——50 万股，价格为 1.00 美元。
+
+请注意，在资金存入时，净资产价值是未知的。
+
+%lang en
+
+## **Basic computations (AUM/NAV)**
+
+AUM \= (sum of different share classes \* NAV of each share class \+ cash) 
+
+NAV \= AUM / number of shares
+
+Example:
+
+Class S1 \- 100k shares each at USD 1.50  
+Class S2 \- 500k shares each at USD 1  
+Cash \- 50k USD
+
+Tokens outstanding \= 350k
+
+AUM \= 700k USD  
+NAV \= 2.00 USD
+
+%lang zh
+
+## **基本计算（资产管理规模/净资产价值）**
+
+资产管理规模（AUM）=（不同份额类别总数 \* 各份额类别的净资产价值 \+ 现金）
+
+净资产价值（NAV）= 资产管理规模 / 份额总数
+
+示例：
+
+S1 类：10 万股，每股 1.50 美元  
+S2 类：50 万股，每股 1 美元  
+现金：5 万美元
+
+已发行代币数量：35 万
+
+资产管理规模 \= 70 万美元  
+净资产价值 \= 2.00 美元
+
+%lang en
+
+## **Deposit pricing model** 
+
+A new deposit will be convertible to the tokens at the current NAV value
+
+Example:
+
+Deposit \#1 \= 10k USD  
+Deposit \#2 \= 20k USD
+
+Create tokens
+
+Deposit \#1 \= 5k Tokens  
+Deposit \#2 \= 10k Tokens
+
+Underlying holdings after token deposit
+
+Class S1 \- 100k shares each at USD 1.50  
+Class S2 \- 500k shares each at USD 1  
+Class S3 \- 30k shares each at USD 1  
+Cash \- 50k USD
+
+AUM \= 730k USDT  
+Shares outstanding \= 365k  
+NAV \= 2.00
+
+%lang zh
+
+## **存款定价模型**
+
+新的存款将按照当前的净资产价值转换为代币。
+
+示例：
+
+存款 \#1 \= 1 万美元  
+存款 \#2 \= 2 万美元
+
+创建代币
+
+存款 \#1 \= 5 千个代币  
+存款 \#2 \= 1 万个代币
+
+代币存款后，底层资产的构成如下：
+
+S1 类：10 万股，每股 1.50 美元  
+S2 类：50 万股，每股 1 美元  
+S3 类：3 万股，每股 1 美元  
+现金：5 万美元
+
+资产管理规模 \= 73 万 USDT  
+已发行股份 \= 36.5 万  
+净资产价值 \= 2.00
+
+%lang en
+
+## **Withdrawal pricing model**
+
+The withdrawal pricing model takes into account that there are holdings are divided into different classes and that the NAV is not known until the tokens are actually redeemed.  Our aim is to keep the withdrawal price at the NAV price, although this requirement may  be modified with the agreement of the client.
+
+We will withdraw from different classes using FIFO (first in, first out).  FIFO is the standard accounting mechanism for dealing with different assets.  We estimate the number of tokens in each class to be withdrawn using an estimated NAV, and that and an extra amount to take into account any possible shift in the NAV,.  We then place order the for tokens to be sold.  Cover differences between the withdraw price and cash via cash reserve.  In the event that cash reserve is unable to cover the difference then we perform an additional withdrawal in the next month.
+
+For example, assume we wish to withdraw 5k tokens
+
+So we would need to get USD 10K to cover the withdrawal.  So we would need to convert 6666.67 S1 tokens to cover the withdrawal.  However because the NAV may change it we may request a withdrawal of 8000 S1 tokens to cover the withdrawal in case there is an unexpected change in the NAV
+
+Any excess withdrawals will be kept as offchain reserve.
+
+%lang zh
+
+## **提款定价模型**
+
+提款定价模型考虑到持有的资产分为不同的类别，并且只有在实际赎回代币时才能确定资产净值（NAV）。我们的目标是使提款价格与资产净值价格保持一致，尽管此要求可能会在与客户协商后进行修改。
+
+我们将使用先进先出（FIFO）原则从不同类别中进行提款。FIFO是处理不同资产的标准会计机制。我们使用估计的资产净值来估算每个类别中要提款的代币数量，并增加一个额外的金额以考虑资产净值可能发生的任何变化。然后，我们下达出售代币的订单。通过现金储备来弥补提款价格与实际收到的现金之间的差异。如果现金储备不足以弥补差异，则我们将在下个月进行额外的提款。
+
+例如，假设我们希望提款 5000 个代币。
+
+因此，我们需要获得 10000 美元的资金来支付提款。因此，我们需要将 6666.67 个 S1 代币转换为现金以支付提款。但是，由于资产净值可能会发生变化，我们可能会申请提款 8000 个 S1 代币，以防资产净值发生意外变化。
+
+任何多余的提款将作为链外储备保留。
 
 # %25\_pricing\_v2
 
