@@ -11,6 +11,10 @@ import re
 from typing import Optional, IO
 from pathlib import Path
 
+def process_markdown_line(line):
+    line = line.replace('\\\\', '\\').replace('\\_', '_').replace('\\=', '=').replace('\\+', '+').replace('\\*', '*').replace('\\-', '-')
+    return re.sub(r'(\$\$)|(\$)', lambda m: m.group(1) or m.group(2) != '' and r'\$' or m.group(0), line)
+
 class MarkdownFileSplitter:
     """
     A class to process a file stream, splitting it based on delimiters.
@@ -89,7 +93,7 @@ class MarkdownFileSplitter:
                         self._pending_images.append(match.group(1))
                     if self._current_lang is None or self._current_lang == self._lang:
                         self._current_file.write(
-                            line.replace('$', r'\$') \
+                            process_markdown_line(line) \
                             if is_markdown else line.replace('\\', '')
                         )
         except Exception:
