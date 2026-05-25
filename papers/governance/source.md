@@ -33,7 +33,6 @@ site:
   template: book-theme  
   title: AXC Documentation  
   layout: wide
-
   \# options:  
   \#   logo: my\_logo.png  
   nav: \[\]  
