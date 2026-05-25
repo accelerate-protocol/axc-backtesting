@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Add a trap to kill background jobs when the process exits
 trap "kill $(jobs -p) 2>/dev/null; exit" EXIT
 
@@ -22,7 +23,7 @@ fi
 
 pushd en
 cp ../*.png .
-myst build --html
+npx myst build --html
 npx serve --cors _build/html/ -l tcp://0.0.0.0:3000 &
 popd
 ./splitfile.py source.md --delimiter "# %" --overwrite --lang zh
