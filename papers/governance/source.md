@@ -17,7 +17,7 @@ project:
     \- title: Solution design  
       children:  
            \- file: 22\_liquidity.md  
-           \- file: 26\_pricing\_model.md  
+           \- file: 26\_permissionless\_pricing\_model.md  
     \- title: Legal and compliance  
       children:  
           \- file: 40\_user\_rights.md  
