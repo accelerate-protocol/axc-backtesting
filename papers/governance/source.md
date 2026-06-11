@@ -153,9 +153,8 @@ GROW Heritage Fund adopts a Fund of Hedge Funds (FoHF) approach, investing in a 
 \-Multi-Strategy Approach: Combines equity, macro, and arbitrage sub-strategies within a single fund, dynamically adjusting weights to adapt to market conditions.  
 Relative Value Strategies: Exploits pricing inefficiencies between related assets, such as fixed-income arbitrage and volatility arbitrage.  
 \-Global Macro Strategies: Utilizes a top-down, research-driven approach to identify macroeconomic opportunities, allocating across FX, equities, bonds, futures, and options, with flexible positioning to capture opportunities across asset classes.  
-![][image4]
 
-### 
+![][image4]
 
 ### **Timelines for deposit**
 
@@ -218,10 +217,10 @@ According to historical performance from 2019 to 2025, the fund of funds recorde
 
 |  | Grow Heritage Fund | S\&P 500 Benchmark |
 | :---- | ----- | ----- |
-| **Compound Annual Return** | 17.86% | 16.60% |
-| **Annualized Volatility** | 14.88% | 16.95% |
-| **Maximum Drawdown  (6 years)**  | \-11.47% | \-34.00% |
-| **Sharpe Ratio** | 1.91 | 0.75 |
+| **Compound Annual Return** | 17.26% | 16.60% |
+| **Maximum Drawdown  (6 years)**  | \-5.93% | \-34.00% |
+| **Sharpe Ratio** | 1.97 | 0.75 |
+
 
 ## **Portfolio**
 
