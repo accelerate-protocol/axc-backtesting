@@ -61,7 +61,7 @@ To get started with the AXC protocol go to our website at
 
 [https://dapp.axc.xyz/home?filters=%257B%2522vaultFinancingStatus%2522%253A%255B%2522%2522%255D%257D](https://dapp.axc.xyz/home?filters=%257B%2522vaultFinancingStatus%2522%253A%255B%2522%2522%255D%257D)
 
-## **AXC protocol permissionless products:**
+## **AXC protocol permissionless products (Distributed Assets):**
 
 ### **Deposit funds** 
 
@@ -84,7 +84,7 @@ To get started with the AXC protocol go to our website at
 * Choose between Standard or Instantaneous v1 withdrawals. Standard withdrawals settle quarterly or weekly, depending on the vault product. Instantaneous v1 withdrawals settle immediately, however, capacity is limited based on the vault product.  
 * Receive USDT/USDC. 
 
-## **AXC protocol permissioned/whitelist products**
+## **AXC protocol permissioned/whitelist products (Represented Assets)**
 
 * Contact [hello@axc.xyz](mailto:hello@axc.xyz) for whitelist/permissioned vault.
 
@@ -152,9 +152,11 @@ GROW Heritage Fund adopts a Fund of Hedge Funds (FoHF) approach, investing in a 
 \-Equity Long/Short Strategies: Maintains both long and short equity positions to generate returns from both sides of the market while mitigating downside risk.  
 \-Multi-Strategy Approach: Combines equity, macro, and arbitrage sub-strategies within a single fund, dynamically adjusting weights to adapt to market conditions.  
 Relative Value Strategies: Exploits pricing inefficiencies between related assets, such as fixed-income arbitrage and volatility arbitrage.  
-\-Global Macro Strategies: Utilizes a top-down, research-driven approach to identify macroeconomic opportunities, allocating across FX, equities, bonds, futures, and options, with flexible positioning to capture opportunities across asset classes.  
+\-Global Macro Strategies: Utilizes a top-down, research-driven approach to identify macroeconomic opportunities, allocating across FX, equities, bonds, futures, and options, with flexible positioning to capture opportunities across asset classes.
 
 ![][image4]
+
+### 
 
 ### **Timelines for deposit**
 
@@ -180,7 +182,7 @@ Relative Value Strategies: Exploits pricing inefficiencies between related asset
 
 ## **Overview** 
 
-* Regulation S digital security token issued under the laws of the Republic of Marshall Islands.    
+* Regulation S digital security RWA token issued under the laws of the Republic of Marshall Islands.     
 * Under the United States Securities Exchange Commission taxonomy of digital assets. The Growth Yield Token \- Whitelisted is a third party-sponsored tokenized security that provides a synthetic economic exposure that tracks the value of the underlying asset.   
 * Under the taxonomy of the [rwa.xyz](http://rwa.xyz), the Growth Yield Token is structured as a represented asset (Permissioned) which is not designed to allow for investors to have permissionless P2P transferability and external mobility on DeFi lending pools and other protocols.   
 * The token corresponds one-to-one with shares of the underlying asset, therefore the value of this token should be identical to the value of the underlying asset, although like the underlying asset, a market price may not be instantly available.  
@@ -220,7 +222,6 @@ According to historical performance from 2019 to 2025, the fund of funds recorde
 | **Compound Annual Return** | 17.26% | 16.60% |
 | **Maximum Drawdown  (6 years)**  | \-5.93% | \-34.00% |
 | **Sharpe Ratio** | 1.97 | 0.75 |
-
 
 ## **Portfolio**
 
@@ -652,35 +653,29 @@ Fundshare=TokenshareTokensupply\*Valueonchain+ValueoffchainValueoffchain
 
 # **User** 
 
-* A user can be a legal person or can be a smart contract entity, such as a wallet, with no legal personhood.  
-* Token holder user are not required for AML/KYC and wallet address whitelisting. However all on-chain wallets must pass BlockSec’s Phalcon compliance KYT and KYA checks before being approved to hold and receive tokens.  
-* The legal relationship is governed by General Terms and Conditions and applicable laws with limited legal recourse.  
-* Token holder user will indirectly participate in the performance (Economic exposure) of the underlying.  
-* Token issuers undertakes to use funds for investment in underlying  
-  * No right to convert tokens  
-  * Token issuer subject to anti-fraud/anti-scam laws  
-  * Token holder entitled to share of underlying assets in case of liquidation  
-* Tokenholder rights analogous to structured product or LP in fund  
-* No restrictions on transferability  
-* No trust, fiduciary, or beneficial ownership relationship  
-* Deposits and withdraws in crypto
+Eligible to participate in AXC permissionless products (classified as distributed assets under the RWA.xyz framework).
+
+A user may be a natural person, a legal entity, or a smart contract wallet with no legal personhood. Token holders are not required to complete AML/KYC or wallet address whitelisting. However, all on-chain wallets must pass BlockSec Phalcon's KYT (Know Your Transaction) and KYA (Know Your Address) compliance checks before being approved to hold or receive tokens.
+
+The legal relationship between the token holder and the issuer is governed by the General Terms and Conditions and applicable laws, with limited legal recourse. There is no trust, fiduciary, or beneficial ownership relationship between the user and the token issuer. Users gain indirect economic exposure to the performance of the underlying assets. 
+
+The token issuer undertakes to deploy funds into the specified underlying investments. Tokenholder rights are analogous to those of a structured product investor or a limited partner in a fund including entitlement to a pro-rata share of underlying assets in the event of liquidation. The token issuer remains subject to applicable anti-fraud and anti-scam laws.
+
+Tokens carry no restrictions on transferability and no right of conversion against the issuer. Users deposit and withdraw cryptocurrencies in exchange for tokens.
 
 # %42\_investor\_rights.md
 
 # **Investor**
 
-* Token holder investor is a legal person and a PI or Accredited investors based on respective jurisdictions (for example a natural person or corporation). Currently only available to users located in supported jurisdictions.  
-* Token holder investor must undergo AML/KYC and wallet address whitelisting.   
-* The legal relationship is governed by legal contract addendum and General Terms & Conditions with strong legal recourse.  
-* Token holder user will directly participate in the performance (Economic exposure) of the underlying   
-* Strong legal recourse  
-  * Investors have the legal right to convert tokens to cash  
-  * Token holders have creditor rights against token issuer include right to force involuntary administration  
-  * Legal right enforceable via arbitration award through international recognized arbitration panel  
-  * Token issuer subject to anti-fraud/anti-scam laws  
-  * Token holder entitled to share of underlying assets in case of liquidation  
-* The tokens issued to investors cannot be transferred directly to other token holders.  
-* Tokens must be purchased and redeemed in fiat currency
+Eligible to participate in AXC permissioned products (classified as represented assets under the RWA.xyz framework). Currently available only to investors located in supported jurisdictions.
+
+An investor must be a legal person qualifying as a Professional Investor or Accredited Investor under the applicable jurisdiction (for example, a natural person or corporation). All investors must complete AML/KYC verification and wallet address whitelisting before being approved to hold or receive tokens.
+
+The legal relationship between the investor and the token issuer is governed by a legal contract addendum and the General Terms and Conditions, with strong legal recourse. Investors directly participate in the economic performance of the underlying assets.
+
+Investor rights include the legal right to convert tokens to cash, creditor rights against the token issuer including the right to force involuntary administration, and entitlement to a pro-rata share of underlying assets in the event of liquidation. All legal rights are enforceable via arbitration award through an internationally recognized arbitration panel. The token issuer remains subject to applicable anti-fraud and anti-scam laws.
+
+Tokens issued to investors cannot be transferred directly to other token holders. Investors must deposit and withdraw fiat currencies in exchange for tokens.
 
 # %45\_legal.md
 
@@ -688,11 +683,9 @@ Fundshare=TokenshareTokensupply\*Valueonchain+ValueoffchainValueoffchain
 
 ## **Overview**
 
-The AXC protocol contains provisions for both permissionless and permissioned tokens.  The permissioned token is merely a bookkeeping receipt which is evidence of ownership of the underlying assets.  However, the permissionless token requires special legal architecture that is specifically engineered to provide institutional-grade bankruptcy remoteness, enhance token transferability, and preserve financial privacy.
+The legal architecture is designed to grant permissionless token holders direct economic exposure to the returns of the underlying assets, as well as access to the value of the assets in the event of liquidation, while maintaining regulatory compliance and institutional-grade bankruptcy remoteness all while minimizing regulatory friction.
 
-This architecture is designed to grant permissionless token holders direct economic exposure to the returns of the underlying assets as well as access to the value of the assets in the event of liquidation while maintaining regulatory compliance and minimizing regulatory friction.
-
-The basic legal and entity architecture of the AXC token is as follows:
+The basic legal and entity architecture of the AXC permissionless token (distributed asset) is as follows:
 
 ![][image8]
 
@@ -738,8 +731,6 @@ Appoints a non‑fiduciary token services provider on a non‑exclusive basis, s
 ### **Custodial Account Agreement (Master LLC & Custodian)**
 
 Establishes a Hong Kong institutional/professional investor securities account. It includes product risk disclosures and grants the licensed broker the right to suspend the account or request information in compliance with AML/KYC regulations.
-
-## 
 
 ## **Structural Protections & Risk Mitigation:**
 
