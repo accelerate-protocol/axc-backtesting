@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -87,6 +89,8 @@ class TokenPriceProcessor:
         # Compute effective start_date
         if start_date is None:
             start_date = self.unix_to_date(prices[-1]["pricedAt"])
+        if start_date == "start":
+            start_date = self.unix_to_date(prices[0]["pricedAt"])
         ic(start_date)
         # Build filtered list of (entry, date_str) tuples in one pass
         filtered_entries = [
@@ -100,7 +104,7 @@ class TokenPriceProcessor:
             url = f"{self.base_url}/{date_str}"
             payload = [{
                 "id": self.token,
-                "metrics": {"net_asset_value": float(entry["price"])}
+                "metrics": {"net_asset_value": float(entry['price'])}
             }]
 
             print(f"date={date_str} token={self.token} price={entry['price']}")
@@ -115,7 +119,8 @@ class TokenPriceProcessor:
                 if response.text:
                     print(f"  Body: {response.text[:500]}")
 
-    def process_prices(self, vault: str, api_key: str, dryrun: bool = True, start_date: str = None) -> None:
+    def process_prices(self, vault: str, api_key: str, dryrun: bool = True, start_date: str = None, 
+                       override: float | None = None) -> None:
         """
         Main method to fetch and process token prices for a given vault.
 
@@ -126,4 +131,31 @@ class TokenPriceProcessor:
             start_date: Optional start date (YYYY-MM-DD) to filter entries.
         """
         prices = self.fetch_token_prices(vault)['data']['list']
+        if override is not None:
+            for d in prices: d['price'] = str(override)
         self.save_prices(prices, api_key, dryrun, start_date)
+
+
+if __name__ == '__main__':
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    BASE_URL = "https://ingestion-api.rwa.xyz/v1/assets/metrics"
+    TOKEN_DICT = {
+        "GYT": "260420103728001",
+    }
+    TOKEN_OVERRIDE = {
+        "GYTW": ["260416100623001",  1.0]
+    }
+    API_KEY = os.getenv("API_KEY")
+    LOAD_URL = "https://dapp.axc.xyz/axc-backend/api/v2/vault/fund/token-prices" 
+    DRY_RUN=False
+
+    for token, vault in TOKEN_DICT.items():
+        process = TokenPriceProcessor(BASE_URL, token, LOAD_URL)
+        process.process_prices(vault, API_KEY, dryrun=DRY_RUN)
+
+    for token, vault in TOKEN_OVERRIDE.items():
+        process = TokenPriceProcessor(BASE_URL, token, LOAD_URL)
+        process.process_prices(vault[0], API_KEY, dryrun=DRY_RUN, override=vault[1])
