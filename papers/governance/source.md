@@ -290,15 +290,13 @@ The toolkit covers three operational areas:
 
 ## **1: Architecture**
 
-* **High Level workflow:** The issuer or administrator authenticates with a wallet and submits an operation request through the frontend management interface. The request passes through the NGINX reverse proxy to the middleware, which coordinates the workflow and invokes data system for calculations and internal approvals. Once approved, the token engine prepares the blockchain transaction, obtains a signature from the MPC signing service using the internal execution account, and submits it to the target blockchain. Depending on the operation, the transaction interacts with a contract factory to deploy an asset contract or with an existing asset contract to manage ownership, permissions or template-specific product logic.
-
-* #### **Authentication, authorisation and signing:** Authentication: Establish who is interacting with the application. Authorisation: Determine whether that user may request a particular operation. Transaction signing: Authorise execution through the internal blockchain account. On-chain enforcement: Validate the transaction against contract-level permissions and rules. In the described implementation, users authenticate with their own wallets, while administrative transactions are submitted through an internal execution account.
+* **High Level workflow:** The issuer or administrator authenticates with a wallet and submits an operation request through the frontend management interface. The request passes through the NGINX reverse proxy to the middleware, which coordinates the workflow and invokes data system for calculations and internal approvals. Once approved, the token engine prepares the blockchain transaction, obtains a signature from the MPC signing service using the internal execution account, and submits it to the target blockchain. Depending on the operation, the transaction interacts with a contract factory to deploy an asset contract or with an existing asset contract to manage ownership, permissions or template-specific product logic.  
+* **Authentication, authorisation and signing:** Authentication: Establish who is interacting with the application. Authorisation: Determine whether that user may request a particular operation. Transaction signing: Authorise execution through the internal blockchain account. On-chain enforcement: Validate the transaction against contract-level permissions and rules. In the described implementation, users authenticate with their own wallets, while administrative transactions are submitted through an internal execution account.
 
 ## **2: Backend Components**
 
-* #### **Token Engine:** The token engine is the blockchain execution component. It receives instructions from middleware and submits the corresponding operations to the selected network. Described responsibilities: Receive instructions for contract deployment and asset administration. Translate instructions into blockchain-specific calls. Coordinate signing through the internal execution account. Submit transactions that update on-chain state.
-
-* **Smart Contract Templates and Factories:** Factory contracts to create asse contracts and connect them to the wider infrastructure. A template defines the behaviour of a supported product type. A factory creates instances of that template. An asset contract represents an individual issued product.  
+* **Token Engine:** The token engine is the blockchain execution component. It receives instructions from middleware and submits the corresponding operations to the selected network. Described responsibilities: Receive instructions for contract deployment and asset administration. Translate instructions into blockchain-specific calls. Coordinate signing through the internal execution account. Submit transactions that update on-chain state.  
+* **Smart Contract Templates and Factories:** Factory contracts to create asse contracts and connect them to the wider infrastructure. A template defines the behaviour of a supported product type. A factory creates instances of that tem**plate. An asset contract represents an individual issued product.**  
 * **Multi-Party Computation Security Module:** The security module manages signing authority for the internal execution account. Under the described model: A user authenticates through the frontend. The application determines whether the requested operation is permitted. The backend prepares the blockchain transaction. The signing service authorises that transaction. The token engine submits it to the network. This arrangement allows application-user access to change without necessarily changing the internal execution address.
 
 ## **3: Data System** 
@@ -319,11 +317,9 @@ The toolkit covers three operational areas:
 
 ## **6: Supporting Infrastructure**
 
-* ### **NGINX Reverse Proxy:** The infrastructure includes NGINX configuration for routing external requests to internal modules. NGINX supports this through its reverse-proxy functionality. ([nginx.org](https://nginx.org/en/docs/http/ngx_http_proxy_module.html?utm_source=openai))
-
-* ### **Deployment documentation should identify:** Public routes and their upstream services. TLS configuration. Request-size and timeout limits. Rate limits.Trusted proxy-header handling. Logging and sensitive-data redaction. Routing through NGINX should not be treated as a substitute for application-level authorisation.
-
-* ### **Deployment Scripts:** Deployment scripts are included, but their commands and supported environments were not supplied. Runtime and infrastructure prerequisites. Required environment variables. Database initialisation and migrations.RPC and network configuration. Signer provisioning.Factory deployment and address registration.Service startup order and health checks. Upgrade, rollback and recovery procedures.
+* **NGINX Reverse Proxy:** The infrastructure includes NGINX configuration for routing external requests to internal modules. NGINX supports this through its reverse-proxy functionality. ([nginx.org](https://nginx.org/en/docs/http/ngx_http_proxy_module.html?utm_source=openai))  
+* **Deployment documentation should identify:** Public routes and their upstream services. TLS configuration. Request-size and timeout limits. Rate limits.Trusted proxy-header handling. Logging and sensitive-data redaction. Routing through NGINX should not be treated as a substitute for application-level authorisation.  
+* **Deployment Scripts:** Deployment scripts are included, but their commands and supported environments were not supplied. Runtime and infrastructure prerequisites. Required environment variables. Database initialisation and migrations.RPC and network configuration. Signer provisioning.Factory deployment and address registration.Service startup order and health checks. Upgrade, rollback and recovery procedures.
 
 %%22\_liquidity\_sdk.md
 
