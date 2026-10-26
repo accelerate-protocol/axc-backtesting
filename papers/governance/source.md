@@ -360,11 +360,9 @@ The framework currently applies only to assets distributed on a permissionless b
 
 ## **4\. Component: Internal Netting**
 
-* **Internal netting:**  Uses incoming deposits to meet withdrawal demand before deploying residual capital into the underlying assets.
-
-* ### **Illustrative flow:** A depositor supplies the settlement asset. The protocol evaluates eligible withdrawal obligations.Available incoming funds offset those obligations. Remaining funds are allocated between the reserve and underlying investments according to the configured policy. Example**:** If incoming deposits total 100,000 units and eligible withdrawals total 60,000 units, netting can use 60,000 units to satisfy withdrawals, leaving 40,000 units for allocation before fees and other adjustments. This example illustrates cash flow netting only. It does not specify token pricing, issuance quantities or queue priority.
-
-* ### **Implementation requirement:** Specify whether netting occurs within individual transactions, through periodic batches or through an external operator.
+* **Internal netting:**  Uses incoming deposits to meet withdrawal demand before deploying residual capital into the underlying assets.  
+* **Illustrative flow:** A depositor supplies the settlement asset. The protocol evaluates eligible withdrawal obligations.Available incoming funds offset those obligations. Remaining funds are allocated between the reserve and underlying investments according to the configured policy. Example**:** If incoming deposits total 100,000 units and eligible withdrawals total 60,000 units, netting can use 60,000 units to satisfy withdrawals, leaving 40,000 units for allocation before fees and other adjustments. This example illustrates cash flow netting only. It does not specify token pricing, issuance quantities or queue priority.  
+* **Implementation requirement:** Specify whether netting occurs within individual transactions, through periodic batches or through an external operator.
 
 ## **5\. Component: Withdrawal Processing and Redemption Queue**
 
