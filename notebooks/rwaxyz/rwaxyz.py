@@ -143,14 +143,15 @@ if __name__ == '__main__':
 
     BASE_URL = "https://ingestion-api.rwa.xyz/v1/assets/metrics"
     TOKEN_DICT = {
-        "GYT": "260420103728001",
+#        "GYT": "260420103728001",
+        "GYTW": "260416100623001"
     }
     TOKEN_OVERRIDE = {
-        "GYTW": ["260416100623001",  1.0]
+#        "GYTW": ["260416100623001",  1.0]
     }
     API_KEY = os.getenv("API_KEY")
     LOAD_URL = "https://dapp.axc.xyz/axc-backend/api/v2/vault/fund/token-prices" 
-    DRY_RUN=False
+    DRY_RUN=True
 
     for token, vault in TOKEN_DICT.items():
         process = TokenPriceProcessor(BASE_URL, token, LOAD_URL)
