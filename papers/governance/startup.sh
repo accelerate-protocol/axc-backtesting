@@ -19,14 +19,14 @@ else
     echo "Current directory is already within axc-backtesting/papers/governance. No changes needed."
 fi
 
-./splitfile.py source.md --delimiter "# %" --overwrite
+./splitfile.py source.md --delimiter "%%" --overwrite
 
 pushd en
 cp ../*.png .
 npx myst build --html
 npx serve --cors _build/html/ -l tcp://0.0.0.0:3000 &
 popd
-./splitfile.py source.md --delimiter "# %" --overwrite --lang zh
+./splitfile.py source.md --delimiter "%%" --overwrite --lang zh
 pushd zh
 cp ../*.png .
 npx serve --cors _build/html/ -l tcp://0.0.0.0:3001 &
